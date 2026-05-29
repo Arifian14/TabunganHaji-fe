@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BSI Hajj Portal - Buka Rekening</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=Public+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {},
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {},
+            "fontFamily": {
+                    "headline": ["Inter", "sans-serif"],
+                    "display": ["Inter", "sans-serif"],
+                    "body": ["Inter", "sans-serif"],
+                    "label": ["Public Sans", "sans-serif"]
+            },
+            "fontSize": {}
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings:
+          'FILL' 0,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24
+        }
+    </style>
+</head>
+<body class="bg-neutral-50 min-h-screen font-body text-neutral-900">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full z-40 hidden lg:flex flex-col py-4 bg-neutral-50 dark:bg-neutral-950 h-screen w-64 border-r border-neutral-200 dark:border-neutral-800">
+<div class="px-6 mb-8 flex items-center gap-3">
+<div class="w-10 h-10 rounded-lg bg-[#006a62]/10 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[#006a62]" style="font-variation-settings: 'FILL' 1;">mosque</span>
+</div>
+<div>
+<h1 class="text-lg font-black text-[#006a62] leading-tight">BSI Hajj Portal</h1>
+<p class="text-xs text-neutral-500 font-label">Internal Staff</p>
+</div>
+</div>
+<div class="flex-1 flex flex-col gap-2 overflow-y-auto px-2">
+<a class="flex items-center gap-3 font-label text-label dark:text-neutral-300 text-neutral-700 dark:text-neutral-400 px-4 py-3 mx-2 rounded-lg hover:bg-[#006a62]/10 dark:hover:bg-[#006a62]/20 transition-transform duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Beranda</span>
+</a>
+<a class="flex items-center gap-3 font-label text-label dark:text-neutral-300 bg-[#006a62] text-white rounded-lg px-4 py-3 mx-2 transition-transform duration-150 active:scale-95 shadow-sm" href="#">
+<span class="material-symbols-outlined">person_search</span>
+<span>Manajemen Nasabah</span>
+</a>
+<a class="flex items-center gap-3 font-label text-label dark:text-neutral-300 text-neutral-700 dark:text-neutral-400 px-4 py-3 mx-2 rounded-lg hover:bg-[#006a62]/10 dark:hover:bg-[#006a62]/20 transition-transform duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span>Riwayat Transaksi</span>
+</a>
+<a class="flex items-center gap-3 font-label text-label dark:text-neutral-300 text-neutral-700 dark:text-neutral-400 px-4 py-3 mx-2 rounded-lg hover:bg-[#006a62]/10 dark:hover:bg-[#006a62]/20 transition-transform duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined">assessment</span>
+<span>Laporan</span>
+</a>
+</div>
+<div class="mt-auto pt-4 border-t border-neutral-200 dark:border-neutral-800 px-2 flex flex-col gap-2">
+<a class="flex items-center gap-3 font-label text-label dark:text-neutral-300 text-neutral-700 dark:text-neutral-400 px-4 py-3 mx-2 rounded-lg hover:bg-[#006a62]/10 dark:hover:bg-[#006a62]/20 transition-transform duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined">security</span>
+<span>Keamanan</span>
+</a>
+<a class="flex items-center gap-3 font-label text-label dark:text-neutral-300 text-neutral-700 dark:text-neutral-400 px-4 py-3 mx-2 rounded-lg hover:bg-[#006a62]/10 dark:hover:bg-[#006a62]/20 transition-transform duration-150 active:scale-95" href="#">
+<span class="material-symbols-outlined">support_agent</span>
+<span>Bantuan</span>
+</a>
+<button class="mt-4 flex items-center justify-center gap-2 font-label font-medium text-red-600 bg-red-50 hover:bg-red-100 px-4 py-2 mx-4 rounded-lg transition-colors duration-150">
+<span class="material-symbols-outlined">logout</span>
+<span>Log Out</span>
+</button>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="lg:ml-64 flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="sticky top-0 z-50 flex items-center justify-between px-6 h-16 w-full bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 shadow-sm transition-colors duration-200">
+<div class="flex items-center gap-4 flex-1">
+<!-- Mobile Menu Button (hidden on desktop) -->
+<button class="lg:hidden p-2 -ml-2 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-600">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<!-- Search Bar -->
+<div class="hidden sm:flex relative w-full max-w-md group">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 group-focus-within:text-[#006a62] transition-colors">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-neutral-100 dark:bg-neutral-800 border-transparent rounded-lg text-sm focus:border-[#006a62] focus:bg-white focus:ring-1 focus:ring-[#006a62] transition-all font-body dark:text-neutral-100" placeholder="Cari nasabah, transaksi..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-2 sm:gap-4">
+<button class="p-2 rounded-full hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white dark:border-neutral-900"></span>
+</button>
+<button class="p-2 rounded-full hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="p-2 rounded-full hover:bg-neutral-50 dark:hover:bg-neutral-800 text-neutral-600 dark:text-neutral-400 transition-colors hidden sm:block">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-6 w-px bg-neutral-200 dark:bg-neutral-700 mx-1 hidden sm:block"></div>
+<button class="flex items-center gap-2 hover:bg-neutral-50 dark:hover:bg-neutral-800 p-1.5 rounded-lg transition-colors ml-1">
+<div class="w-8 h-8 rounded-full bg-[#006a62] text-white flex items-center justify-center font-bold text-sm shrink-0">
+                        AH
+                    </div>
+<span class="material-symbols-outlined text-neutral-500 text-sm hidden sm:block">expand_more</span>
+</button>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 p-6 lg:p-8 max-w-5xl w-full mx-auto">
+<!-- Breadcrumb -->
+<nav class="flex text-sm text-neutral-500 font-label mb-6">
+<ol class="flex items-center space-x-2">
+<li><a class="hover:text-[#006a62] transition-colors" href="#">Manajemen Nasabah</a></li>
+<li><span class="material-symbols-outlined text-sm">chevron_right</span></li>
+<li class="font-medium text-neutral-900">Buka Rekening</li>
+</ol>
+</nav>
+<!-- Page Header -->
+<div class="flex items-center gap-4 mb-8">
+<button class="p-2 rounded-full hover:bg-neutral-200 bg-white border border-neutral-200 shadow-sm transition-colors text-neutral-700">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div>
+<h2 class="text-2xl font-bold font-headline text-neutral-900 tracking-tight">Buka Rekening Tabungan Haji</h2>
+<p class="text-sm text-neutral-500 font-body mt-1">Inisiasi pembukaan rekening tabungan haji baru untuk nasabah terdaftar.</p>
+</div>
+</div>
+<!-- Central Form Card -->
+<div class="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden">
+<!-- Card Header -->
+<div class="px-6 py-5 border-b border-neutral-100 flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-[#006a62]/10 flex items-center justify-center text-[#006a62]">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</div>
+<h3 class="text-lg font-semibold font-headline text-neutral-800">Pilih Nasabah</h3>
+</div>
+<!-- Card Body -->
+<div class="p-6 flex flex-col gap-6">
+<!-- Searchable Select -->
+<div>
+<label class="block text-sm font-medium text-neutral-700 font-label mb-2">Nasabah <span class="text-red-500">*</span></label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">search</span>
+<input class="w-full pl-10 pr-10 py-2.5 bg-white border border-neutral-300 rounded-lg text-sm focus:border-[#006a62] focus:ring-1 focus:ring-[#006a62] transition-colors font-body" placeholder="Cari &amp; pilih nasabah..." type="text" value="Ahmad Ridwan"/>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 cursor-pointer">close</span>
+</div>
+</div>
+<!-- Highlighted Selection Box -->
+<div class="bg-neutral-50 border border-neutral-200 rounded-lg p-4 flex items-center gap-4 relative overflow-hidden group">
+<div class="absolute inset-y-0 left-0 w-1 bg-[#006a62]"></div>
+<div class="w-12 h-12 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-lg shrink-0">
+                            AR
+                        </div>
+<div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-4">
+<div>
+<p class="text-xs text-neutral-500 font-label uppercase tracking-wider mb-0.5">Nama Lengkap</p>
+<p class="text-sm font-semibold text-neutral-900">Ahmad Ridwan</p>
+</div>
+<div>
+<p class="text-xs text-neutral-500 font-label uppercase tracking-wider mb-0.5">NIK</p>
+<p class="text-sm font-medium text-neutral-700">3273123456789012</p>
+</div>
+<div>
+<p class="text-xs text-neutral-500 font-label uppercase tracking-wider mb-0.5">Email</p>
+<p class="text-sm font-medium text-neutral-700">ahmad@email.com</p>
+</div>
+</div>
+<button class="text-sm font-medium text-[#006a62] hover:text-[#004e48] px-3 py-1.5 rounded bg-[#006a62]/5 hover:bg-[#006a62]/10 transition-colors">
+                            Ganti
+                        </button>
+</div>
+<!-- Detail Rekening Baru Panel -->
+<div class="bg-teal-50/50 border border-teal-100 rounded-lg p-5 mt-2">
+<h4 class="text-sm font-semibold font-headline text-[#006a62] mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">receipt_long</span>
+                            Detail Rekening Baru
+                        </h4>
+<div class="space-y-4">
+<div class="flex justify-between items-center py-2 border-b border-teal-100/50">
+<span class="text-sm text-neutral-600 font-label">Saldo Awal</span>
+<span class="text-sm font-semibold text-neutral-900 font-body">Rp 0</span>
+</div>
+<div class="flex justify-between items-center py-2 border-b border-teal-100/50">
+<span class="text-sm text-neutral-600 font-label">Status</span>
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-green-100 text-green-800 tracking-wide">AKTIF</span>
+</div>
+<div class="flex justify-between items-center py-2">
+<span class="text-sm text-neutral-600 font-label">Nomor Rekening</span>
+<span class="text-sm text-neutral-500 italic font-body">Dibuat otomatis (diawali 60)</span>
+</div>
+</div>
+</div>
+<!-- Information Note -->
+<div class="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-lg p-4 mt-2">
+<span class="material-symbols-outlined text-blue-500 mt-0.5 text-xl">info</span>
+<p class="text-sm text-blue-800 font-body leading-relaxed">
+                            Setiap nasabah hanya dapat memiliki 1 rekening tabungan haji aktif.
+                        </p>
+</div>
+</div>
+<!-- Card Footer -->
+<div class="px-6 py-4 bg-neutral-50 border-t border-neutral-100 flex items-center justify-end gap-3 rounded-b-xl">
+<button class="px-5 py-2.5 text-sm font-medium font-label text-neutral-700 bg-white border border-neutral-300 rounded-lg hover:bg-neutral-50 transition-colors focus:outline-none focus:ring-2 focus:ring-neutral-200 focus:ring-offset-1">
+                        Batal
+                    </button>
+<button class="flex items-center gap-2 px-5 py-2.5 text-sm font-medium font-label text-white bg-[#006a62] hover:bg-[#00524c] rounded-lg transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-[#006a62] focus:ring-offset-1">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'wght' 600;">add</span>
+                        Buka Rekening
+                    </button>
+</div>
+</div>
+</main>
+</div>
+</body></html>
