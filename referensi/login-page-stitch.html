@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sistem Tabungan Haji - Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Public+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            DEFAULT: '#006a62',
+                            container: '#74f8e5',
+                            on_container: '#00201d'
+                        },
+                        neutral: {
+                            50: '#fafafa',
+                            100: '#f5f5f5',
+                            200: '#e5e5e5',
+                            300: '#d4d4d4',
+                            400: '#a3a3a3',
+                            500: '#737373',
+                            600: '#525252',
+                            700: '#404040',
+                            800: '#262626',
+                            900: '#171717',
+                        }
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    fontFamily: {
+                        "headline": ["Inter", "sans-serif"],
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Public Sans", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .bg-pattern {
+            background-color: #fafafa;
+            background-image: radial-gradient(#d4d4d4 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+    </style>
+</head>
+<body class="bg-pattern min-h-screen flex flex-col justify-center items-center p-4 font-body text-neutral-800">
+<!-- Note: TopNavBar and SideNavBar are suppressed as this is a linear/transactional Login page -->
+<main class="w-full max-w-md w-full flex flex-col items-center">
+<!-- Login Card -->
+<div class="bg-white w-full rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-neutral-100 overflow-hidden relative backdrop-blur-sm">
+<!-- Top Decorative Bar -->
+<div class="h-1.5 w-full bg-[#006a62]"></div>
+<div class="p-8 sm:p-10">
+<!-- Header -->
+<div class="flex flex-col items-center mb-8 text-center">
+<img alt="BSI Logo" class="h-16 w-auto mb-6 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCiQVdk6TKHXsL8vlstpYvySBN9bcky28avqUCsj6Wwb8M046Tst33sa5s4Na9qMcz-AfUZ7KgFDOiFNaM6juga1x5P8gdgjSodY6iTE08qF10fA3t7t3yMjlFfeUitxqdFMf4t99WLasE8PjjEV2jLHRqesiLP__27IJu9x-Kiqq9dA1F_ZLUew2uPWDRMX_kKiB3eCv44OKJassZ8oNPHnkl85NK42_ATdiSBJ-0rQz4qE1zrLd9QjjhXDrEKtjnNIMIjZ7_7pKw"/>
+<h1 class="font-headline text-2xl font-bold text-neutral-900 mb-2 tracking-tight">Sistem Tabungan Haji</h1>
+<p class="font-label text-sm text-neutral-500 font-medium">Bank Syariah Indonesia</p>
+</div>
+<!-- Form -->
+<form action="#" class="space-y-6" method="POST" onsubmit="event.preventDefault(); alert('Login submission intercepted for prototype.');">
+<!-- Email Field -->
+<div class="space-y-2">
+<label class="block font-label text-sm font-semibold text-neutral-700" for="email">Email Petugas</label>
+<div class="relative rounded-lg shadow-sm">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-neutral-400 text-xl" data-icon="mail">mail</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-3 border-neutral-200 bg-neutral-50 rounded-lg text-neutral-900 focus:ring-[#006a62] focus:border-[#006a62] focus:bg-white transition-colors sm:text-sm font-body" id="email" name="email" placeholder="petugas@bsi.co.id" required="" type="email"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="space-y-2">
+<label class="block font-label text-sm font-semibold text-neutral-700" for="password">Kata Sandi</label>
+<div class="relative rounded-lg shadow-sm">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-neutral-400 text-xl" data-icon="lock">lock</span>
+</div>
+<input class="block w-full pl-10 pr-10 py-3 border-neutral-200 bg-neutral-50 rounded-lg text-neutral-900 focus:ring-[#006a62] focus:border-[#006a62] focus:bg-white transition-colors sm:text-sm font-body tracking-wider" id="password" name="password" placeholder="••••••••" required="" type="password"/>
+<button class="absolute inset-y-0 right-0 pr-3 flex items-center text-neutral-400 hover:text-neutral-600 focus:outline-none transition-colors" onclick="togglePassword()" type="button">
+<span class="material-symbols-outlined text-xl" data-icon="visibility" id="eye-icon">visibility</span>
+</button>
+</div>
+</div>
+<!-- Additional Options (Forgot password could go here, but keeping it minimal per request) -->
+<!-- Submit Button -->
+<button class="w-full flex justify-center items-center py-3.5 px-4 border border-transparent rounded-lg shadow-sm text-sm font-label font-bold text-white bg-[#006a62] hover:bg-[#005a53] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#006a62] transition-all duration-200 group active:scale-[0.98]" type="submit">
+                        Masuk
+                        <span class="material-symbols-outlined ml-2 text-lg group-hover:translate-x-1 transition-transform duration-200" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</form>
+<!-- Warning Banner inside card -->
+<div class="mt-8 bg-red-50 rounded-lg border border-red-100 p-4 flex items-start">
+<span class="material-symbols-outlined text-red-600 mr-3 shrink-0" data-icon="warning" style="font-variation-settings: 'FILL' 1;">warning</span>
+<p class="text-xs text-red-800 font-label leading-relaxed font-medium">
+                        Sistem ini terenkripsi dan Hanya untuk petugas BSI yang berwenang
+                    </p>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<div class="mt-8 text-center">
+<p class="text-xs text-neutral-500 font-label font-medium tracking-wide">
+                © 2024 Bank Syariah Indonesia. All rights reserved.
+            </p>
+</div>
+</main>
+<script>
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const eyeIcon = document.getElementById('eye-icon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.innerText = 'visibility_off';
+                eyeIcon.setAttribute('data-icon', 'visibility_off');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.innerText = 'visibility';
+                eyeIcon.setAttribute('data-icon', 'visibility');
+            }
+        }
+    </script>
+</body></html>

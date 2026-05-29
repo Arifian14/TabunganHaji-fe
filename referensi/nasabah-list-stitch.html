@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BSI Haji Savings - Manajemen Nasabah</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Public+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {},
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {},
+            "fontFamily": {
+                    "headline": [
+                            "Inter"
+                    ],
+                    "display": [
+                            "Inter"
+                    ],
+                    "body": [
+                            "Inter"
+                    ],
+                    "label": [
+                            "Public Sans"
+                    ]
+            },
+            "fontSize": {}
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+          font-variation-settings:
+          'FILL' 0,
+          'wght' 400,
+          'GRAD' 0,
+          'opsz' 24
+        }
+        .icon-fill {
+           font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-900 font-body antialiased flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-64 border-r border-white/10 shadow-xl flex flex-col p-4 bg-[#006a62] text-white z-50">
+<div class="mb-8 px-4 mt-2">
+<h1 class="text-xl font-headline font-bold text-white">Portal Haji</h1>
+<p class="text-sm text-white/80 mt-1">Manajemen Tabungan</p>
+</div>
+<div class="flex-1 overflow-y-auto">
+<ul class="space-y-2">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 transition-colors cursor-pointer active:scale-95 font-body text-sm" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span>Beranda</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 bg-white/20 text-white font-bold rounded-lg transition-colors cursor-pointer active:scale-95 font-body text-sm" href="#">
+<span class="material-symbols-outlined icon-fill">group</span>
+<span>Manajemen Nasabah</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 transition-colors cursor-pointer active:scale-95 font-body text-sm" href="#">
+<span class="material-symbols-outlined">receipt_long</span>
+<span>Riwayat Transaksi</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-white/80 hover:bg-white/10 transition-colors cursor-pointer active:scale-95 font-body text-sm" href="#">
+<span class="material-symbols-outlined">assessment</span>
+<span>Laporan</span>
+</a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 flex flex-col ml-64 h-full relative">
+<!-- TopNavBar -->
+<header class="sticky top-0 z-40 w-full bg-white shadow-sm border-b border-gray-200">
+<div class="flex justify-between items-center px-6 py-3">
+<div class="flex items-center gap-4">
+<span class="text-lg font-headline font-semibold text-[#006a62]">Dashboard Internal</span>
+</div>
+<div class="flex-1 max-w-xl px-8 flex">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-gray-100 border-transparent focus:bg-white focus:ring-2 focus:ring-[#006a62] focus:border-transparent rounded-full text-sm transition-all duration-200" placeholder="Cari..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4 text-gray-600">
+<button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="p-2 rounded-full hover:bg-gray-100 transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-8 w-8 rounded-full bg-[#006a62]/10 text-[#006a62] font-semibold flex items-center justify-center text-sm border border-[#006a62]/20 shrink-0 ml-2">
+                        AH
+                    </div>
+</div>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 overflow-y-auto p-8">
+<div class="max-w-7xl mx-auto space-y-6">
+<!-- Header Section -->
+<div>
+<h2 class="text-2xl font-headline font-bold text-gray-900">Manajemen Nasabah</h2>
+<p class="text-gray-500 mt-1 text-sm">Kelola data dan status rekening tabungan haji nasabah.</p>
+</div>
+<!-- Action Bar -->
+<div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+<div class="flex flex-1 w-full sm:w-auto gap-3">
+<div class="relative flex-1 max-w-md">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">search</span>
+<input class="w-full pl-9 pr-4 py-2 bg-white border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#006a62] focus:border-[#006a62] shadow-sm" placeholder="Cari nama, NIK, email..." type="text"/>
+</div>
+<div class="relative min-w-[150px]">
+<select class="w-full appearance-none bg-white border border-gray-300 rounded-lg py-2 pl-3 pr-10 text-sm focus:ring-2 focus:ring-[#006a62] focus:border-[#006a62] shadow-sm cursor-pointer text-gray-700">
+<option>Semua Status</option>
+<option>Aktif</option>
+<option>Suspend</option>
+<option>Tutup</option>
+</select>
+<span class="material-symbols-outlined absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">arrow_drop_down</span>
+</div>
+</div>
+<button class="flex items-center justify-center gap-2 bg-[#006a62] hover:bg-[#00524d] text-white px-4 py-2 rounded-lg font-medium text-sm transition-colors shadow-sm w-full sm:w-auto">
+<span class="material-symbols-outlined text-[18px]">person_add</span>
+                        Daftar Nasabah Baru
+                    </button>
+</div>
+<!-- Main Table Card -->
+<div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left text-sm whitespace-nowrap">
+<thead class="bg-gray-50/50 border-b border-gray-100 text-gray-500 uppercase text-xs font-semibold tracking-wider">
+<tr>
+<th class="px-6 py-4">Nasabah</th>
+<th class="px-6 py-4">NIK</th>
+<th class="px-6 py-4">No. HP</th>
+<th class="px-6 py-4">Status Rekening</th>
+<th class="px-6 py-4 text-right">Saldo</th>
+<th class="px-6 py-4 text-center">Aksi</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-gray-100 text-gray-700">
+<!-- Row 1 -->
+<tr class="hover:bg-gray-50/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="h-9 w-9 rounded-full bg-[#006a62]/10 text-[#006a62] font-semibold flex items-center justify-center text-sm border border-[#006a62]/20 shrink-0">AR</div>
+<div>
+<div class="font-medium text-gray-900">Ahmad Ridwan</div>
+<div class="text-xs text-gray-500">ahmad@email.com</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 font-mono text-xs">3273123456789012</td>
+<td class="px-6 py-4">081234567890</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                                            AKTIF
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right font-medium">Rp 25.000.000</td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-center gap-2">
+<button class="p-1 text-gray-400 hover:text-[#006a62] transition-colors" title="Detail">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+<button class="p-1 text-gray-400 hover:text-blue-600 transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-1 text-gray-400 hover:text-red-600 transition-colors" title="Hapus">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-gray-50/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="h-9 w-9 rounded-full bg-amber-100 text-amber-700 font-semibold flex items-center justify-center text-sm border border-amber-200 shrink-0">SF</div>
+<div>
+<div class="font-medium text-gray-900">Siti Fatimah</div>
+<div class="text-xs text-gray-500">siti@email.com</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 font-mono text-xs">3274987654321098</td>
+<td class="px-6 py-4">085612345678</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                                            SUSPEND
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right font-medium">Rp 5.000.000</td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-center gap-2">
+<button class="p-1 text-gray-400 hover:text-[#006a62] transition-colors" title="Detail">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+<button class="p-1 text-gray-400 hover:text-blue-600 transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-1 text-gray-400 hover:text-red-600 transition-colors" title="Hapus">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-gray-50/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="h-9 w-9 rounded-full bg-blue-100 text-blue-700 font-semibold flex items-center justify-center text-sm border border-blue-200 shrink-0">BP</div>
+<div>
+<div class="font-medium text-gray-900">Budi Pratama</div>
+<div class="text-xs text-gray-500">budi@email.com</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 font-mono text-xs">3275111222333444</td>
+<td class="px-6 py-4">081398765432</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                                            AKTIF
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right font-medium">Rp 10.000.000</td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-center gap-2">
+<button class="p-1 text-gray-400 hover:text-[#006a62] transition-colors" title="Detail">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+<button class="p-1 text-gray-400 hover:text-blue-600 transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-1 text-gray-400 hover:text-red-600 transition-colors" title="Hapus">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-gray-50/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="h-9 w-9 rounded-full bg-purple-100 text-purple-700 font-semibold flex items-center justify-center text-sm border border-purple-200 shrink-0">DL</div>
+<div>
+<div class="font-medium text-gray-900">Diana Lestari</div>
+<div class="text-xs text-gray-500">diana@email.com</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 font-mono text-xs">3276555666777888</td>
+<td class="px-6 py-4">087711223344</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200">
+                                            TUTUP
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right font-medium text-gray-400">Rp 0</td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-center gap-2">
+<button class="p-1 text-gray-400 hover:text-[#006a62] transition-colors" title="Detail">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+<button class="p-1 text-gray-400 hover:text-blue-600 transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-1 text-gray-400 hover:text-red-600 transition-colors" title="Hapus">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-gray-50/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center gap-3">
+<div class="h-9 w-9 rounded-full bg-teal-100 text-teal-700 font-semibold flex items-center justify-center text-sm border border-teal-200 shrink-0">ES</div>
+<div>
+<div class="font-medium text-gray-900">Eko Saputra</div>
+<div class="text-xs text-gray-500">eko@email.com</div>
+</div>
+</div>
+</td>
+<td class="px-6 py-4 font-mono text-xs">3277999000111222</td>
+<td class="px-6 py-4">089955556666</td>
+<td class="px-6 py-4">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+                                            AKTIF
+                                        </span>
+</td>
+<td class="px-6 py-4 text-right font-medium">Rp 15.500.000</td>
+<td class="px-6 py-4">
+<div class="flex items-center justify-center gap-2">
+<button class="p-1 text-gray-400 hover:text-[#006a62] transition-colors" title="Detail">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+<button class="p-1 text-gray-400 hover:text-blue-600 transition-colors" title="Edit">
+<span class="material-symbols-outlined text-[20px]">edit</span>
+</button>
+<button class="p-1 text-gray-400 hover:text-red-600 transition-colors" title="Hapus">
+<span class="material-symbols-outlined text-[20px]">delete</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="bg-gray-50/80 px-6 py-4 border-t border-gray-100 flex items-center justify-between">
+<span class="text-sm text-gray-500">Menampilkan <span class="font-medium text-gray-900">1-5</span> dari <span class="font-medium text-gray-900">24</span> nasabah</span>
+<div class="flex gap-2">
+<button class="p-1.5 rounded-md border border-gray-200 bg-white text-gray-400 hover:text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors" disabled="">
+<span class="material-symbols-outlined text-[20px]">chevron_left</span>
+</button>
+<button class="p-1.5 rounded-md border border-gray-200 bg-white text-gray-600 hover:text-gray-900 hover:bg-gray-50 transition-colors">
+<span class="material-symbols-outlined text-[20px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

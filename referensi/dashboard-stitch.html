@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>BSI Hajj Portal - Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Public+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            DEFAULT: "#006a62",
+                            container: "#006a62",
+                            hover: "rgba(0, 106, 98, 0.1)"
+                        }
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    fontFamily: {
+                        "headline": ["Inter"],
+                        "display": ["Inter"],
+                        "body": ["Inter"],
+                        "label": ["Public Sans"]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-neutral-50 dark:bg-neutral-900 font-body text-neutral-800 dark:text-neutral-100 flex min-h-screen">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full z-40 hidden lg:flex flex-col py-4 w-64 border-r border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-950 font-label text-label dark:text-neutral-300">
+<div class="px-6 mb-8 flex flex-col items-center">
+<h1 class="text-lg font-black text-[#006a62] mt-4">BSI Hajj Portal</h1>
+<p class="text-sm text-neutral-500 mt-1">Internal Staff</p>
+</div>
+<div class="flex-1 overflow-y-auto">
+<ul class="space-y-1 mt-2">
+<!-- Active Item -->
+<li>
+<a class="flex items-center px-4 py-3 bg-[#006a62] text-white rounded-lg mx-2 scale-95 duration-150" href="#">
+<span class="material-symbols-outlined mr-3" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+                        Beranda
+                    </a>
+</li>
+<!-- Inactive Items -->
+<li>
+<a class="flex items-center text-neutral-700 dark:text-neutral-400 px-4 py-3 mx-2 hover:bg-[#006a62]/10 dark:hover:bg-[#006a62]/20 rounded-lg scale-95 duration-150 transition-colors" href="#">
+<span class="material-symbols-outlined mr-3">person_search</span>
+                        Manajemen Nasabah
+                    </a>
+</li>
+<li>
+<a class="flex items-center text-neutral-700 dark:text-neutral-400 px-4 py-3 mx-2 hover:bg-[#006a62]/10 dark:hover:bg-[#006a62]/20 rounded-lg scale-95 duration-150 transition-colors" href="#">
+<span class="material-symbols-outlined mr-3">receipt_long</span>
+                        Riwayat Transaksi
+                    </a>
+</li>
+<li>
+<a class="flex items-center text-neutral-700 dark:text-neutral-400 px-4 py-3 mx-2 hover:bg-[#006a62]/10 dark:hover:bg-[#006a62]/20 rounded-lg scale-95 duration-150 transition-colors" href="#">
+<span class="material-symbols-outlined mr-3">assessment</span>
+                        Laporan
+                    </a>
+</li>
+</ul>
+</div>
+<div class="mt-auto">
+<ul class="space-y-1 mb-4">
+<li>
+<a class="flex items-center text-neutral-700 dark:text-neutral-400 px-4 py-3 mx-2 hover:bg-[#006a62]/10 dark:hover:bg-[#006a62]/20 rounded-lg scale-95 duration-150 transition-colors" href="#">
+<span class="material-symbols-outlined mr-3">security</span>
+                        Keamanan
+                    </a>
+</li>
+<li>
+<a class="flex items-center text-neutral-700 dark:text-neutral-400 px-4 py-3 mx-2 hover:bg-[#006a62]/10 dark:hover:bg-[#006a62]/20 rounded-lg scale-95 duration-150 transition-colors" href="#">
+<span class="material-symbols-outlined mr-3">support_agent</span>
+                        Bantuan
+                    </a>
+</li>
+</ul>
+<div class="px-4 mx-2">
+<button class="w-full flex justify-center items-center py-2 border border-red-500 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium">
+                    Log Out
+                </button>
+</div>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="flex-1 lg:ml-64 flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="sticky top-0 z-50 flex items-center justify-between px-6 h-16 w-full border-b border-neutral-200 dark:border-neutral-800 shadow-sm bg-white dark:bg-neutral-900 font-body text-body dark:text-neutral-100 transition-colors duration-200">
+<!-- Left: Search -->
+<div class="flex-1 flex items-center">
+<div class="relative w-full max-w-md hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-neutral-100 dark:bg-neutral-800 border-none rounded-lg text-sm focus:ring-2 focus:ring-[#006a62] transition-shadow" placeholder="Cari data nasabah, transaksi..." type="text"/>
+</div>
+<!-- Mobile Logo (hidden on desktop) -->
+<h1 class="lg:hidden text-xl font-bold text-[#006a62] dark:text-[#006a62]">BSI Hajj Portal</h1>
+</div>
+<!-- Right: Actions & Profile -->
+<div class="flex items-center space-x-2">
+<button class="p-2 text-[#006a62] hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-full transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+</button>
+<button class="p-2 text-[#006a62] hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-full transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="p-2 text-[#006a62] hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-full transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="ml-4 h-8 w-8 bg-[#006a62] text-white rounded-full flex items-center justify-center font-bold text-sm cursor-pointer shadow-sm">
+                    AH
+                </div>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 p-6 md:p-8 bg-neutral-50">
+<!-- Page Header -->
+<div class="mb-8">
+<h2 class="text-3xl font-headline font-bold text-neutral-900 tracking-tight">Dashboard</h2>
+<p class="text-neutral-500 mt-1">Selamat datang, Admin Haji</p>
+</div>
+<!-- Stats Grid (Bento style) -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<!-- Stat 1 -->
+<div class="bg-white p-6 rounded-xl border border-neutral-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-teal-50 rounded-full group-hover:scale-110 transition-transform duration-500 opacity-50 z-0"></div>
+<div class="relative z-10 flex items-start justify-between">
+<div>
+<p class="text-sm font-medium text-neutral-500 mb-1">Total Nasabah Terdaftar</p>
+<h3 class="text-3xl font-bold text-neutral-900">1,247</h3>
+</div>
+<div class="p-3 bg-teal-50 text-[#006a62] rounded-lg">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">groups</span>
+</div>
+</div>
+</div>
+<!-- Stat 2 -->
+<div class="bg-white p-6 rounded-xl border border-neutral-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-50 rounded-full group-hover:scale-110 transition-transform duration-500 opacity-50 z-0"></div>
+<div class="relative z-10 flex items-start justify-between">
+<div>
+<p class="text-sm font-medium text-neutral-500 mb-1">Rekening Aktif</p>
+<h3 class="text-3xl font-bold text-neutral-900">1,198</h3>
+</div>
+<div class="p-3 bg-emerald-50 text-emerald-600 rounded-lg">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
+</div>
+</div>
+</div>
+<!-- Stat 3 -->
+<div class="bg-white p-6 rounded-xl border border-neutral-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group lg:col-span-1 md:col-span-2">
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-blue-50 rounded-full group-hover:scale-110 transition-transform duration-500 opacity-50 z-0"></div>
+<div class="relative z-10 flex items-start justify-between">
+<div>
+<p class="text-sm font-medium text-neutral-500 mb-1">24 Transaksi</p>
+<h3 class="text-2xl font-bold text-neutral-900">Rp 2.450.000.000</h3>
+</div>
+<div class="p-3 bg-blue-50 text-blue-600 rounded-lg">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">payments</span>
+</div>
+</div>
+<p class="text-xs text-neutral-400 mt-2 relative z-10">Total Setor Hari Ini</p>
+</div>
+<!-- Stat 4 -->
+<div class="bg-white p-6 rounded-xl border border-neutral-100 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 w-24 h-24 bg-amber-50 rounded-full group-hover:scale-110 transition-transform duration-500 opacity-50 z-0"></div>
+<div class="relative z-10 flex items-start justify-between">
+<div>
+<p class="text-sm font-medium text-neutral-500 mb-1">Porsi Baru</p>
+<h3 class="text-3xl font-bold text-neutral-900">12</h3>
+</div>
+<div class="p-3 bg-amber-50 text-amber-600 rounded-lg">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">event</span>
+</div>
+</div>
+<p class="text-xs text-neutral-400 mt-2 relative z-10">Estimasi Bulan Ini</p>
+</div>
+</div>
+<!-- Lower Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+<!-- Left Wide: Transaksi Terbaru -->
+<div class="lg:col-span-2 bg-white rounded-xl border border-neutral-100 shadow-sm overflow-hidden">
+<div class="p-6 border-b border-neutral-100 flex justify-between items-center">
+<h3 class="text-lg font-bold text-neutral-900">Transaksi Terbaru</h3>
+<button class="text-sm font-medium text-[#006a62] hover:underline">Lihat Semua</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left text-sm text-neutral-600">
+<thead class="bg-neutral-50 text-neutral-500 uppercase text-xs font-semibold">
+<tr>
+<th class="px-6 py-4">Nasabah</th>
+<th class="px-6 py-4">Jenis</th>
+<th class="px-6 py-4">Nominal</th>
+<th class="px-6 py-4">Waktu</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-neutral-100">
+<tr class="hover:bg-neutral-50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center">
+<div class="w-8 h-8 rounded-full bg-neutral-200 flex items-center justify-center text-xs font-bold text-neutral-600 mr-3">AR</div>
+<span class="font-medium text-neutral-900">Ahmad Ridwan</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-medium">SETOR</span>
+</td>
+<td class="px-6 py-4 font-medium text-neutral-900">Rp 25.000.000</td>
+<td class="px-6 py-4 text-neutral-500">10:45 WIB</td>
+</tr>
+<tr class="hover:bg-neutral-50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center">
+<div class="w-8 h-8 rounded-full bg-neutral-200 flex items-center justify-center text-xs font-bold text-neutral-600 mr-3">SF</div>
+<span class="font-medium text-neutral-900">Siti Fatimah</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full text-xs font-medium">TARIK</span>
+</td>
+<td class="px-6 py-4 font-medium text-neutral-900">Rp 5.000.000</td>
+<td class="px-6 py-4 text-neutral-500">09:30 WIB</td>
+</tr>
+<tr class="hover:bg-neutral-50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center">
+<div class="w-8 h-8 rounded-full bg-neutral-200 flex items-center justify-center text-xs font-bold text-neutral-600 mr-3">BP</div>
+<span class="font-medium text-neutral-900">Budi Pratama</span>
+</div>
+</td>
+<td class="px-6 py-4">
+<span class="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full text-xs font-medium">SETOR</span>
+</td>
+<td class="px-6 py-4 font-medium text-neutral-900">Rp 10.000.000</td>
+<td class="px-6 py-4 text-neutral-500">Kemarin, 15:20 WIB</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Right Narrow: Status Rekening Donut Chart (CSS implementation) -->
+<div class="bg-white rounded-xl border border-neutral-100 shadow-sm p-6 flex flex-col">
+<h3 class="text-lg font-bold text-neutral-900 mb-6">Status Rekening</h3>
+<div class="flex-1 flex flex-col items-center justify-center">
+<!-- Simple CSS Donut representation -->
+<div class="relative w-40 h-40 rounded-full flex items-center justify-center" style="background: conic-gradient(#006a62 0% 88%, #f59e0b 88% 96%, #ef4444 96% 100%);">
+<div class="w-28 h-28 bg-white rounded-full flex items-center justify-center flex-col shadow-inner">
+<span class="text-xs text-neutral-500 uppercase font-bold tracking-wider">Total</span>
+<span class="text-xl font-bold text-neutral-900">1,247</span>
+</div>
+</div>
+<!-- Legend -->
+<div class="w-full mt-8 space-y-3">
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center">
+<div class="w-3 h-3 rounded-full bg-[#006a62] mr-2"></div>
+<span class="text-neutral-600">Aktif</span>
+</div>
+<span class="font-medium text-neutral-900">1,100</span>
+</div>
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center">
+<div class="w-3 h-3 rounded-full bg-amber-500 mr-2"></div>
+<span class="text-neutral-600">Suspend</span>
+</div>
+<span class="font-medium text-neutral-900">100</span>
+</div>
+<div class="flex items-center justify-between text-sm">
+<div class="flex items-center">
+<div class="w-3 h-3 rounded-full bg-red-500 mr-2"></div>
+<span class="text-neutral-600">Tutup</span>
+</div>
+<span class="font-medium text-neutral-900">47</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom: Quick Actions -->
+<div class="bg-white rounded-xl border border-neutral-100 shadow-sm p-6 mb-8">
+<h3 class="text-lg font-bold text-neutral-900 mb-4">Aksi Cepat</h3>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<button class="flex flex-col items-center justify-center p-4 rounded-lg border border-neutral-200 hover:border-[#006a62] hover:bg-teal-50/50 group transition-all">
+<div class="w-10 h-10 rounded-full bg-neutral-100 group-hover:bg-[#006a62] group-hover:text-white text-neutral-600 flex items-center justify-center mb-3 transition-colors">
+<span class="material-symbols-outlined">person_add</span>
+</div>
+<span class="text-sm font-medium text-neutral-700">Daftar Nasabah</span>
+</button>
+<button class="flex flex-col items-center justify-center p-4 rounded-lg border border-neutral-200 hover:border-[#006a62] hover:bg-teal-50/50 group transition-all">
+<div class="w-10 h-10 rounded-full bg-neutral-100 group-hover:bg-[#006a62] group-hover:text-white text-neutral-600 flex items-center justify-center mb-3 transition-colors">
+<span class="material-symbols-outlined">account_balance</span>
+</div>
+<span class="text-sm font-medium text-neutral-700">Buka Rekening</span>
+</button>
+<button class="flex flex-col items-center justify-center p-4 rounded-lg border border-neutral-200 hover:border-[#006a62] hover:bg-teal-50/50 group transition-all">
+<div class="w-10 h-10 rounded-full bg-neutral-100 group-hover:bg-[#006a62] group-hover:text-white text-neutral-600 flex items-center justify-center mb-3 transition-colors">
+<span class="material-symbols-outlined">add_card</span>
+</div>
+<span class="text-sm font-medium text-neutral-700">Setor Dana</span>
+</button>
+<button class="flex flex-col items-center justify-center p-4 rounded-lg border border-neutral-200 hover:border-[#006a62] hover:bg-teal-50/50 group transition-all">
+<div class="w-10 h-10 rounded-full bg-neutral-100 group-hover:bg-[#006a62] group-hover:text-white text-neutral-600 flex items-center justify-center mb-3 transition-colors">
+<span class="material-symbols-outlined">print</span>
+</div>
+<span class="text-sm font-medium text-neutral-700">Cetak Laporan</span>
+</button>
+</div>
+</div>
+</main>
+</div>
+</body></html>

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+
+<html lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pendaftaran Nasabah Baru - BSI Hajj Portal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;family=Public+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#006a62",
+                        "primary-hover": "#00534d",
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    fontFamily: {
+                        "headline": ["Inter", "sans-serif"],
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                        "label": ["Public Sans", "sans-serif"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .fill-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+    </style>
+</head>
+<body class="bg-neutral-50 font-body text-neutral-900 antialiased flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-0 h-full z-40 hidden lg:flex flex-col py-4 bg-neutral-50 dark:bg-neutral-950 border-r border-neutral-200 dark:border-neutral-800 w-64">
+<!-- Header -->
+<div class="px-6 mb-8 flex items-center space-x-3">
+<div class="h-10 w-10 bg-[#006a62] rounded-lg flex items-center justify-center text-white font-bold text-xl shadow-sm">
+                BSI
+            </div>
+<div>
+<h1 class="text-lg font-black text-[#006a62]">BSI Hajj Portal</h1>
+<p class="text-xs text-neutral-500 font-medium">Internal Staff</p>
+</div>
+</div>
+<!-- Navigation Tabs -->
+<nav class="flex-1 overflow-y-auto px-2 space-y-1">
+<a class="flex items-center space-x-3 text-neutral-700 dark:text-neutral-400 px-4 py-3 mx-2 rounded-lg hover:bg-[#006a62]/10 dark:hover:bg-[#006a62]/20 font-label text-sm font-medium transition-colors duration-150 group" href="#">
+<span class="material-symbols-outlined text-neutral-500 group-hover:text-[#006a62] transition-colors">dashboard</span>
+<span>Beranda</span>
+</a>
+<a class="flex items-center space-x-3 bg-[#006a62] text-white rounded-lg px-4 py-3 mx-2 font-label text-sm font-medium shadow-sm transition-transform duration-150" href="#">
+<span class="material-symbols-outlined fill-icon text-white">person_search</span>
+<span>Manajemen Nasabah</span>
+</a>
+<a class="flex items-center space-x-3 text-neutral-700 dark:text-neutral-400 px-4 py-3 mx-2 rounded-lg hover:bg-[#006a62]/10 dark:hover:bg-[#006a62]/20 font-label text-sm font-medium transition-colors duration-150 group" href="#">
+<span class="material-symbols-outlined text-neutral-500 group-hover:text-[#006a62] transition-colors">receipt_long</span>
+<span>Riwayat Transaksi</span>
+</a>
+<a class="flex items-center space-x-3 text-neutral-700 dark:text-neutral-400 px-4 py-3 mx-2 rounded-lg hover:bg-[#006a62]/10 dark:hover:bg-[#006a62]/20 font-label text-sm font-medium transition-colors duration-150 group" href="#">
+<span class="material-symbols-outlined text-neutral-500 group-hover:text-[#006a62] transition-colors">assessment</span>
+<span>Laporan</span>
+</a>
+</nav>
+<!-- Footer / Utility Tabs -->
+<div class="px-2 mt-auto space-y-1 pt-4 border-t border-neutral-200">
+<a class="flex items-center space-x-3 text-neutral-700 dark:text-neutral-400 px-4 py-3 mx-2 rounded-lg hover:bg-[#006a62]/10 font-label text-sm font-medium transition-colors duration-150 group" href="#">
+<span class="material-symbols-outlined text-neutral-500 group-hover:text-[#006a62]">security</span>
+<span>Keamanan</span>
+</a>
+<a class="flex items-center space-x-3 text-neutral-700 dark:text-neutral-400 px-4 py-3 mx-2 rounded-lg hover:bg-[#006a62]/10 font-label text-sm font-medium transition-colors duration-150 group" href="#">
+<span class="material-symbols-outlined text-neutral-500 group-hover:text-[#006a62]">support_agent</span>
+<span>Bantuan</span>
+</a>
+<div class="px-4 py-4 mt-2">
+<button class="w-full flex justify-center items-center space-x-2 border border-neutral-300 text-neutral-700 hover:bg-neutral-100 px-4 py-2 rounded-lg text-sm font-semibold transition-colors">
+<span class="material-symbols-outlined text-sm">logout</span>
+<span>Log Out</span>
+</button>
+</div>
+</div>
+</aside>
+<!-- Main Wrapper -->
+<div class="flex-1 flex flex-col lg:ml-64 relative min-h-screen">
+<!-- TopNavBar -->
+<header class="sticky top-0 z-50 flex items-center justify-between px-6 h-16 w-full bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800 shadow-sm transition-colors duration-200">
+<!-- Left: Mobile Menu & Search (Placeholder) -->
+<div class="flex items-center space-x-4">
+<button class="lg:hidden text-neutral-600 hover:text-[#006a62] transition-colors">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="hidden md:flex items-center bg-neutral-100 rounded-full px-4 py-1.5 border border-transparent focus-within:border-[#006a62] focus-within:bg-white transition-all">
+<span class="material-symbols-outlined text-neutral-400 text-sm">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm ml-2 w-48 font-body placeholder-neutral-400" placeholder="Cari nasabah..." type="text"/>
+</div>
+</div>
+<!-- Right: Actions & Profile -->
+<div class="flex items-center space-x-2">
+<button class="p-2 text-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-full transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-1.5 right-1.5 h-2 w-2 bg-red-500 rounded-full border-2 border-white"></span>
+</button>
+<button class="p-2 text-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-full transition-colors">
+<span class="material-symbols-outlined">help</span>
+</button>
+<button class="p-2 text-neutral-600 hover:bg-neutral-50 dark:hover:bg-neutral-800 rounded-full transition-colors">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<div class="h-8 w-px bg-neutral-200 mx-2"></div>
+<button class="flex items-center space-x-2 p-1 hover:bg-neutral-50 rounded-full pl-2 pr-3 transition-colors">
+<div class="h-8 w-8 rounded-full bg-[#006a62]/20 flex items-center justify-center text-[#006a62] font-semibold text-sm">
+                        AH
+                    </div>
+<span class="text-sm font-medium text-neutral-700 hidden sm:block">Admin Haji</span>
+</button>
+</div>
+</header>
+<!-- Main Content Area -->
+<main class="flex-1 overflow-y-auto p-6 md:p-8 bg-neutral-50">
+<div class="max-w-5xl mx-auto space-y-6">
+<!-- Breadcrumbs & Header -->
+<div>
+<nav aria-label="Breadcrumb" class="flex text-sm text-neutral-500 mb-2 font-label">
+<ol class="inline-flex items-center space-x-1 md:space-x-2">
+<li class="inline-flex items-center">
+<a class="hover:text-[#006a62] transition-colors" href="#">Manajemen Nasabah</a>
+</li>
+<li>
+<div class="flex items-center">
+<span class="material-symbols-outlined text-sm mx-1">chevron_right</span>
+<span class="text-neutral-900 font-medium">Pendaftaran Baru</span>
+</div>
+</li>
+</ol>
+</nav>
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h2 class="text-2xl md:text-3xl font-headline font-bold text-neutral-900 tracking-tight">Pendaftaran Nasabah Baru</h2>
+<p class="text-neutral-500 mt-1 text-sm md:text-base">Lengkapi form di bawah ini untuk mendaftarkan nasabah tabungan haji BSI.</p>
+</div>
+</div>
+</div>
+<!-- Form Card -->
+<div class="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden">
+<!-- Card Header -->
+<div class="px-6 py-5 border-b border-neutral-100 flex items-center space-x-3 bg-white">
+<div class="h-10 w-10 rounded-full bg-[#006a62]/10 flex items-center justify-center text-[#006a62]">
+<span class="material-symbols-outlined fill-icon">person_add</span>
+</div>
+<h3 class="text-lg font-semibold text-neutral-800 font-headline">Data Pribadi</h3>
+</div>
+<!-- Card Body -->
+<div class="p-6 md:p-8">
+<form class="space-y-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- NIK Field -->
+<div>
+<label class="block text-sm font-medium text-neutral-700 mb-1.5 font-label" for="nik">Nomor Induk Kependudukan (NIK)</label>
+<div class="relative rounded-md shadow-sm">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-neutral-400 text-sm">badge</span>
+</div>
+<input class="focus:ring-[#006a62] focus:border-[#006a62] block w-full pl-10 sm:text-sm border-neutral-300 rounded-lg py-2.5 transition-colors" id="nik" name="nik" placeholder="Masukkan 16 digit NIK" type="text"/>
+</div>
+</div>
+<!-- Nama Lengkap Field -->
+<div>
+<label class="block text-sm font-medium text-neutral-700 mb-1.5 font-label" for="nama">Nama Lengkap (Sesuai KTP)</label>
+<div class="relative rounded-md shadow-sm">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-neutral-400 text-sm">person</span>
+</div>
+<input class="focus:ring-[#006a62] focus:border-[#006a62] block w-full pl-10 sm:text-sm border-neutral-300 rounded-lg py-2.5 transition-colors" id="nama" name="nama" placeholder="Masukkan nama lengkap" type="text"/>
+</div>
+</div>
+<!-- Email Field -->
+<div>
+<label class="block text-sm font-medium text-neutral-700 mb-1.5 font-label" for="email">Alamat Email</label>
+<div class="relative rounded-md shadow-sm">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-neutral-400 text-sm">mail</span>
+</div>
+<input class="focus:ring-[#006a62] focus:border-[#006a62] block w-full pl-10 sm:text-sm border-neutral-300 rounded-lg py-2.5 transition-colors" id="email" name="email" placeholder="contoh@email.com" type="email"/>
+</div>
+</div>
+<!-- Nomor HP Field -->
+<div>
+<label class="block text-sm font-medium text-neutral-700 mb-1.5 font-label" for="phone">Nomor Handphone</label>
+<div class="relative rounded-md shadow-sm">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-neutral-400 text-sm">call</span>
+</div>
+<input class="focus:ring-[#006a62] focus:border-[#006a62] block w-full pl-10 sm:text-sm border-neutral-300 rounded-lg py-2.5 transition-colors" id="phone" name="phone" placeholder="08xx xxxx xxxx" type="tel"/>
+</div>
+</div>
+</div>
+<!-- Password Field (Full Width) -->
+<div class="pt-2">
+<label class="block text-sm font-medium text-neutral-700 mb-1.5 font-label" for="password">Password Sementara Pendaftaran</label>
+<div class="relative rounded-md shadow-sm">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-neutral-400 text-sm">lock</span>
+</div>
+<input class="focus:ring-[#006a62] focus:border-[#006a62] block w-full pl-10 pr-10 sm:text-sm border-neutral-300 rounded-lg py-2.5 transition-colors" id="password" name="password" placeholder="Buat password sementara" type="password"/>
+<div class="absolute inset-y-0 right-0 pr-3 flex items-center">
+<button class="text-neutral-400 hover:text-neutral-600 focus:outline-none" onclick="togglePasswordVisibility('password', 'eye-icon')" type="button">
+<span class="material-symbols-outlined text-sm" id="eye-icon">visibility</span>
+</button>
+</div>
+</div>
+<p class="mt-1.5 text-xs text-neutral-500 font-label">Password digunakan untuk aktivasi awal oleh nasabah. Minimal 8 karakter.</p>
+</div>
+</form>
+</div>
+<!-- Card Footer (Actions) -->
+<div class="px-6 py-4 bg-neutral-50/50 border-t border-neutral-100 flex items-center justify-end space-x-3">
+<button class="px-5 py-2.5 border border-neutral-300 shadow-sm text-sm font-medium rounded-lg text-neutral-700 bg-white hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#006a62] transition-colors" type="button">
+                            Batal
+                        </button>
+<button class="px-5 py-2.5 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-[#006a62] hover:bg-[#00534d] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#006a62] transition-colors flex items-center space-x-2" type="button">
+<span>Daftar Nasabah</span>
+<span class="material-symbols-outlined text-sm">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Standard Footer -->
+<footer class="mt-12 border-t border-neutral-200 pt-6 pb-2 text-center">
+<p class="text-sm text-neutral-500 font-label">© 2024 Bank Syariah Indonesia. Hak Cipta Dilindungi.</p>
+</footer>
+</main>
+</div>
+<script>
+        function togglePasswordVisibility(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
+            
+            if (input.type === "password") {
+                input.type = "text";
+                icon.textContent = "visibility_off";
+            } else {
+                input.type = "password";
+                icon.textContent = "visibility";
+            }
+        }
+    </script>
+</body></html>
