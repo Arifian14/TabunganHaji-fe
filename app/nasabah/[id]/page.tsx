@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import AppHeader from "@/components/layout/app-header";
 import AppSidebar from "@/components/layout/app-sidebar";
+import AuthGuard from "@/components/auth-guard";
 
 /* ─── Types ─── */
 type Status = "AKTIF" | "SUSPEND" | "TUTUP";
@@ -80,7 +81,7 @@ const STATUS_BADGE: Record<Status, string> = {
 };
 
 /* ─── Page ─── */
-export default function DetailNasabahPage() {
+function DetailNasabahContent() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
 
@@ -363,6 +364,14 @@ export default function DetailNasabahPage() {
         </div>
       </div>
     </Shell>
+  );
+}
+
+export default function DetailNasabahPage() {
+  return (
+    <AuthGuard>
+      <DetailNasabahContent />
+    </AuthGuard>
   );
 }
 

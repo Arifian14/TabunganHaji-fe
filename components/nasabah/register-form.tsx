@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { setToken } from "@/lib/auth";
 
-type FormState = "idle" | "loading" | "success" | "error";
+type FormState = "idle" | "loading" | "auto-login" | "success" | "error";
 
 type FormFields = {
   nik: string;
@@ -18,10 +20,10 @@ type ApiError = { error: string; message: string };
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api/v1";
 
 export default function RegisterForm() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [formState, setFormState] = useState<FormState>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [successData, setSuccessData] = useState<{ nama: string; id: string } | null>(null);
   const [fields, setFields] = useState<FormFields>({
     nik: "",
     nama: "",
@@ -57,62 +59,53 @@ export default function RegisterForm() {
         return;
       }
 
-      setSuccessData({ nama: data.nama, id: data.id });
+      /* Auto-login dengan kredensial yang baru saja didaftar */
+      setFormState("auto-login");
+      const loginRes = await fetch(`${API_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: fields.email, password: fields.password }),
+      });
+
+      const loginData = await loginRes.json();
+
+      if (!loginRes.ok || !loginData.token) {
+        /* Akun dibuat tapi auto-login gagal — arahkan ke /login dengan email auto-fill */
+        setFormState("success");
+        setTimeout(() => router.replace("/login"), 1200);
+        return;
+      }
+
+      setToken(loginData.token);
       setFormState("success");
+      router.replace("/dashboard");
     } catch {
       setErrorMessage("Tidak dapat terhubung ke server. Periksa koneksi Anda.");
       setFormState("error");
     }
   }
 
-  /* ─── Success State ─── */
-  if (formState === "success" && successData) {
+  /* ─── Success / Auto-login transition state ─── */
+  if (formState === "auto-login" || formState === "success") {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden">
-        <div className="px-6 py-5 border-b border-neutral-100 flex items-center gap-3">
-          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-            <span className="material-symbols-outlined" style={{ fontVariationSettings: '"FILL" 1' }}>
-              check_circle
-            </span>
-          </div>
-          <h3 className="text-lg font-semibold text-neutral-800">Pendaftaran Berhasil</h3>
+      <div className="bg-white rounded-xl shadow-sm border border-neutral-200 p-10 flex flex-col items-center text-center">
+        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+          <span
+            className="material-symbols-outlined text-[32px] text-primary"
+            style={{ fontVariationSettings: '"FILL" 1' }}
+          >
+            check_circle
+          </span>
         </div>
-        <div className="p-8 flex flex-col items-center gap-4 text-center">
-          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-            <span
-              className="material-symbols-outlined text-[32px] text-primary"
-              style={{ fontVariationSettings: '"FILL" 1' }}
-            >
-              person_check
-            </span>
-          </div>
-          <div>
-            <p className="text-base font-medium text-neutral-800">
-              Nasabah <span className="text-primary font-bold">{successData.nama}</span> berhasil
-              didaftarkan.
-            </p>
-            <p className="text-sm text-neutral-500 mt-1">ID Nasabah: {successData.id}</p>
-          </div>
-          <div className="flex gap-3 mt-2 flex-wrap justify-center">
-            <Link
-              href="/nasabah/register"
-              onClick={() => {
-                setFormState("idle");
-                setSuccessData(null);
-                setFields({ nik: "", nama: "", email: "", nomorHp: "", password: "" });
-              }}
-              className="px-5 py-2.5 border border-neutral-300 text-sm font-medium rounded-lg text-neutral-700 bg-white hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
-            >
-              Daftarkan Nasabah Lain
-            </Link>
-            <Link
-              href="/nasabah"
-              className="px-5 py-2.5 text-sm font-medium rounded-lg text-white bg-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors flex items-center gap-2"
-            >
-              <span className="material-symbols-outlined text-sm">groups</span>
-              Lihat Daftar Nasabah
-            </Link>
-          </div>
+        <h2 className="text-lg font-semibold text-neutral-800">Pendaftaran Berhasil</h2>
+        <p className="text-sm text-neutral-500 mt-1">
+          {formState === "auto-login"
+            ? "Menyiapkan akun Anda dan mengalihkan ke dashboard..."
+            : "Mengalihkan ke halaman utama..."}
+        </p>
+        <div className="mt-4 flex items-center gap-2 text-neutral-400">
+          <span className="material-symbols-outlined text-base animate-spin">progress_activity</span>
+          <span className="text-xs">Mohon tunggu</span>
         </div>
       </div>
     );
@@ -129,14 +122,14 @@ export default function RegisterForm() {
       {/* Card Header */}
       <div className="px-6 py-5 border-b border-neutral-100 flex items-center gap-3 bg-white">
         <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-          <span
-            className="material-symbols-outlined"
-            style={{ fontVariationSettings: '"FILL" 1' }}
-          >
+          <span className="material-symbols-outlined" style={{ fontVariationSettings: '"FILL" 1' }}>
             person_add
           </span>
         </div>
-        <h3 className="text-lg font-semibold text-neutral-800">Data Pribadi</h3>
+        <div>
+          <h3 className="text-lg font-semibold text-neutral-800">Data Diri Anda</h3>
+          <p className="text-xs text-neutral-500">Pastikan data sesuai dengan KTP.</p>
+        </div>
       </div>
 
       {/* Error Banner */}
@@ -173,7 +166,7 @@ export default function RegisterForm() {
                   inputMode="numeric"
                   maxLength={16}
                   pattern="\d{16}"
-                  placeholder="Masukkan 16 digit NIK"
+                  placeholder="16 digit NIK pada KTP"
                   required
                   value={fields.nik}
                   onChange={handleChange}
@@ -181,7 +174,7 @@ export default function RegisterForm() {
                   className="block w-full pl-10 pr-3 py-2.5 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary bg-white placeholder:text-neutral-400 transition-colors disabled:opacity-60"
                 />
               </div>
-              <p className="mt-1 text-xs text-neutral-500">Pastikan NIK berjumlah 16 digit sesuai KTP.</p>
+              <p className="mt-1 text-xs text-neutral-500">NIK harus 16 digit sesuai KTP.</p>
             </div>
 
             {/* Nama Lengkap */}
@@ -197,7 +190,7 @@ export default function RegisterForm() {
                   id="nama"
                   name="nama"
                   type="text"
-                  placeholder="Masukkan nama lengkap"
+                  placeholder="Nama lengkap Anda"
                   required
                   minLength={3}
                   maxLength={100}
@@ -222,7 +215,7 @@ export default function RegisterForm() {
                   id="email"
                   name="email"
                   type="email"
-                  placeholder="contoh@email.com"
+                  placeholder="email@anda.com"
                   required
                   value={fields.email}
                   onChange={handleChange}
@@ -230,6 +223,7 @@ export default function RegisterForm() {
                   className="block w-full pl-10 pr-3 py-2.5 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary bg-white placeholder:text-neutral-400 transition-colors disabled:opacity-60"
                 />
               </div>
+              <p className="mt-1 text-xs text-neutral-500">Email akan dipakai untuk login.</p>
             </div>
 
             {/* Nomor HP */}
@@ -261,7 +255,7 @@ export default function RegisterForm() {
           {/* Password */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1.5" htmlFor="password">
-              Password Akun <span className="text-red-500">*</span>
+              Kata Sandi <span className="text-red-500">*</span>
             </label>
             <div className="relative max-w-lg">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -271,7 +265,7 @@ export default function RegisterForm() {
                 id="password"
                 name="password"
                 type={showPassword ? "text" : "password"}
-                placeholder="Buat password akun nasabah"
+                placeholder="Buat kata sandi yang kuat"
                 required
                 minLength={8}
                 maxLength={72}
@@ -297,41 +291,31 @@ export default function RegisterForm() {
 
       {/* Card Footer */}
       <div className="px-6 py-4 bg-neutral-50/50 border-t border-neutral-100 flex items-center justify-between gap-3">
-        {/* Back to Login */}
         <Link
           href="/login"
           className="flex items-center gap-1.5 text-sm text-neutral-500 hover:text-primary transition-colors font-medium"
         >
           <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-          Kembali ke Login
+          Sudah punya akun? Masuk
         </Link>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-3">
-          <Link
-            href="/nasabah"
-            className="px-5 py-2.5 border border-neutral-300 shadow-sm text-sm font-medium rounded-lg text-neutral-700 bg-white hover:bg-neutral-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
-          >
-            Batal
-          </Link>
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="px-5 py-2.5 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {isLoading ? (
-              <>
-                <span className="material-symbols-outlined text-sm">progress_activity</span>
-                Mendaftarkan...
-              </>
-            ) : (
-              <>
-                Daftar Nasabah
-                <span className="material-symbols-outlined text-sm">arrow_forward</span>
-              </>
-            )}
-          </button>
-        </div>
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="px-5 py-2.5 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-primary hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          {isLoading ? (
+            <>
+              <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>
+              Mendaftarkan...
+            </>
+          ) : (
+            <>
+              Daftar Sekarang
+              <span className="material-symbols-outlined text-sm">arrow_forward</span>
+            </>
+          )}
+        </button>
       </div>
     </form>
   );

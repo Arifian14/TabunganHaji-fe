@@ -1,56 +1,75 @@
-import AppHeader from "@/components/layout/app-header";
-import AppSidebar from "@/components/layout/app-sidebar";
+"use client";
+
+import Link from "next/link";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { isLoggedIn } from "@/lib/auth";
 import RegisterForm from "@/components/nasabah/register-form";
 
 export default function RegisterNasabahPage() {
+  const router = useRouter();
+
+  /* Sudah login? Lompat ke dashboard. */
+  useEffect(() => {
+    if (isLoggedIn()) router.replace("/dashboard");
+  }, [router]);
+
   return (
-    <div className="bg-neutral-50 text-neutral-900 antialiased flex min-h-screen">
-      <AppSidebar activeHref="/nasabah" />
-
-      {/* Main Wrapper */}
-      <div className="flex-1 flex flex-col min-w-0">
-        <AppHeader />
-
-        {/* Content */}
-        <main className="flex-1 overflow-y-auto p-6 md:p-8 bg-neutral-50">
-          <div className="max-w-5xl mx-auto space-y-6">
-
-            {/* Breadcrumb + Page Title */}
-            <div>
-              <nav className="flex text-sm text-neutral-500 mb-2">
-                <ol className="inline-flex items-center gap-1">
-                  <li>
-                    <a href="/nasabah" className="hover:text-primary transition-colors font-medium">
-                      Manajemen Nasabah
-                    </a>
-                  </li>
-                  <li className="flex items-center">
-                    <span className="material-symbols-outlined text-sm mx-1">chevron_right</span>
-                    <span className="text-neutral-900 font-medium">Pendaftaran Baru</span>
-                  </li>
-                </ol>
-              </nav>
-              <h2 className="text-2xl md:text-3xl font-bold text-neutral-900 tracking-tight">
-                Pendaftaran Nasabah Baru
-              </h2>
-              <p className="text-neutral-500 mt-1 text-sm md:text-base">
-                Lengkapi form di bawah ini untuk mendaftarkan nasabah tabungan haji BSI.
-              </p>
-            </div>
-
-            {/* Form Card */}
-            <RegisterForm />
-
+    <div
+      className="min-h-screen flex flex-col py-10 px-4"
+      style={{
+        backgroundColor: "#fafafa",
+        backgroundImage: "radial-gradient(#d4d4d4 1px, transparent 1px)",
+        backgroundSize: "20px 20px",
+      }}
+    >
+      <main className="w-full max-w-3xl mx-auto flex-1">
+        {/* Brand header */}
+        <div className="flex flex-col items-center text-center mb-8">
+          <div className="h-14 w-14 mb-4 bg-primary-container rounded-full flex items-center justify-center shadow-sm">
+            <span
+              className="material-symbols-outlined text-[28px] text-on-primary-container"
+              style={{ fontVariationSettings: '"FILL" 1' }}
+            >
+              account_balance
+            </span>
           </div>
+          <h1 className="text-2xl font-bold text-on-surface tracking-tight">
+            Daftar Akun Tabungan Haji
+          </h1>
+          <p className="text-sm text-on-surface-variant font-medium mt-1">
+            Bank Syariah Indonesia
+          </p>
+          <p className="text-sm text-neutral-500 mt-3 max-w-md">
+            Buat akun untuk membuka rekening tabungan haji, mencatat setoran, dan memantau estimasi
+            keberangkatan Anda.
+          </p>
+        </div>
 
-          {/* Page Footer */}
-          <footer className="mt-12 border-t border-neutral-200 pt-6 pb-2 text-center">
-            <p className="text-sm text-neutral-500">
-              © 2024 Bank Syariah Indonesia. Hak Cipta Dilindungi.
-            </p>
-          </footer>
-        </main>
-      </div>
+        {/* Form Card */}
+        <RegisterForm />
+
+        {/* Notice */}
+        <div className="mt-6 bg-amber-50 rounded-lg border border-amber-200 p-4 flex items-start gap-3 max-w-3xl">
+          <span
+            className="material-symbols-outlined text-amber-600 shrink-0 text-xl"
+            style={{ fontVariationSettings: '"FILL" 1' }}
+          >
+            info
+          </span>
+          <p className="text-xs text-amber-800 leading-relaxed">
+            Data yang Anda masukkan akan disimpan dan diverifikasi oleh sistem BSI. Pastikan data
+            sesuai dengan KTP — perubahan NIK setelah pendaftaran tidak dapat dilakukan.
+          </p>
+        </div>
+
+        {/* Footer */}
+        <div className="mt-8 text-center">
+          <p className="text-xs text-on-surface-variant/70 font-medium tracking-wide">
+            © 2024 Bank Syariah Indonesia. All rights reserved.
+          </p>
+        </div>
+      </main>
     </div>
   );
 }

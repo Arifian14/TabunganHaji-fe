@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import AppHeader from "@/components/layout/app-header";
 import AppSidebar from "@/components/layout/app-sidebar";
+import AuthGuard from "@/components/auth-guard";
 
 /* ─── Types ─── */
 type TabunganItem = {
@@ -126,7 +127,7 @@ function DeleteModal({
 }
 
 /* ─── Page ─── */
-export default function ManajemenNasabahPage() {
+function ManajemenNasabahContent() {
   const [nasabahList, setNasabahList]     = useState<Nasabah[]>([]);
   const [loading, setLoading]             = useState(true);
   const [search, setSearch]               = useState("");
@@ -448,5 +449,13 @@ export default function ManajemenNasabahPage() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function ManajemenNasabahPage() {
+  return (
+    <AuthGuard>
+      <ManajemenNasabahContent />
+    </AuthGuard>
   );
 }

@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import AppHeader from "@/components/layout/app-header";
 import AppSidebar from "@/components/layout/app-sidebar";
+import AuthGuard from "@/components/auth-guard";
 
 type FormFields = { nama: string; email: string; nomorHp: string };
 type ApiError = { error: string; message: string; details?: Record<string, string[]> };
@@ -20,7 +21,7 @@ function authHeaders() {
   return { "Content-Type": "application/json", ...(t ? { Authorization: `Bearer ${t}` } : {}) };
 }
 
-export default function EditNasabahPage() {
+function EditNasabahContent() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
 
@@ -275,5 +276,13 @@ export default function EditNasabahPage() {
         </main>
       </div>
     </div>
+  );
+}
+
+export default function EditNasabahPage() {
+  return (
+    <AuthGuard>
+      <EditNasabahContent />
+    </AuthGuard>
   );
 }
