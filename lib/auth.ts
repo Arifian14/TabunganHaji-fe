@@ -1,4 +1,5 @@
 const TOKEN_KEY = "bsi_token";
+const USER_KEY = "bsi_user";
 
 export function getToken(): string {
   if (typeof window === "undefined") return "";
@@ -13,6 +14,31 @@ export function setToken(token: string): void {
 export function clearToken(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(USER_KEY);
+}
+
+export interface UserInfo {
+  id: string;
+  nik?: string;
+  nama: string;
+  email: string;
+  nomorHp?: string;
+}
+
+export function setUserInfo(user: UserInfo): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(USER_KEY, JSON.stringify(user));
+}
+
+export function getUserInfo(): UserInfo | null {
+  if (typeof window === "undefined") return null;
+  const raw = localStorage.getItem(USER_KEY);
+  if (!raw) return null;
+  try {
+    return JSON.parse(raw) as UserInfo;
+  } catch {
+    return null;
+  }
 }
 
 export function isLoggedIn(): boolean {

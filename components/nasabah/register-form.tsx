@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { setToken } from "@/lib/auth";
+import { setToken, setUserInfo } from "@/lib/auth";
 
 type FormState = "idle" | "loading" | "auto-login" | "success" | "error";
 
@@ -77,6 +77,7 @@ export default function RegisterForm() {
       }
 
       setToken(loginData.token);
+      if (loginData.nasabah) setUserInfo(loginData.nasabah);
       setFormState("success");
       router.replace("/dashboard");
     } catch {

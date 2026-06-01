@@ -100,7 +100,7 @@ function SetorContent() {
       }
       const saldoSesudah = Number(d.saldoSesudah ?? Number(rekening.saldo) + nominalNum);
       setSuccess({ nominal: nominalNum, saldoSesudah });
-      setTimeout(() => router.replace("/dashboard"), 1800);
+      setTimeout(() => router.replace("/rekening"), 1800);
     } catch {
       setError("Tidak dapat terhubung ke server. Periksa koneksi Anda.");
       setSubmitting(false);
@@ -286,7 +286,7 @@ function SetorContent() {
       {/* Footer */}
       <div className="px-6 py-4 bg-neutral-50 border-t border-neutral-100 flex items-center justify-end gap-3">
         <Link
-          href="/dashboard"
+          href="/rekening"
           className="px-5 py-2.5 text-sm font-medium text-neutral-700 bg-white border border-neutral-300 rounded-lg hover:bg-neutral-50 transition-colors"
         >
           Batal
@@ -328,8 +328,8 @@ export default function SetorDanaPage() {
                 <nav className="flex text-sm text-neutral-500 mb-3">
                   <ol className="inline-flex items-center gap-1">
                     <li>
-                      <Link href="/dashboard" className="hover:text-primary transition-colors">
-                        Beranda
+                      <Link href="/rekening" className="hover:text-primary transition-colors">
+                        Rekening
                       </Link>
                     </li>
                     <li className="flex items-center">
@@ -340,7 +340,7 @@ export default function SetorDanaPage() {
                 </nav>
                 <div className="flex items-center gap-4">
                   <Link
-                    href="/dashboard"
+                    href="/rekening"
                     className="w-10 h-10 rounded-full bg-white border border-neutral-200 flex items-center justify-center text-neutral-700 hover:bg-neutral-50 transition-colors shadow-sm"
                   >
                     <span className="material-symbols-outlined">arrow_back</span>

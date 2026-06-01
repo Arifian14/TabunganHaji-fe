@@ -281,7 +281,7 @@ function DashboardContent() {
                   tone="info"
                 />
                 <StatCard
-                  label="Total Setoran"
+                  label="Setoran Saya"
                   value={rupiah(totalSetor)}
                   sub={`${transaksi.filter((t) => t.jenis === "SETOR").length} kali setor`}
                   icon="trending_up"
@@ -324,21 +324,21 @@ function DashboardContent() {
                   </div>
                   <div className="flex flex-wrap gap-3 pt-4 border-t border-white/20">
                     <Link
-                      href={`/transaksi/setor?tabungan=${rekening.id}`}
+                      href="/transaksi/setor"
                       className="bg-white text-primary px-5 py-2.5 rounded-lg font-bold text-sm shadow-sm hover:bg-neutral-50 transition-colors flex items-center gap-2"
                     >
                       <span className="material-symbols-outlined text-[18px]">add_card</span>
                       Setor Dana
                     </Link>
                     <Link
-                      href={`/transaksi/tarik?tabungan=${rekening.id}`}
+                      href="/transaksi/tarik"
                       className="bg-white/10 backdrop-blur-sm border border-white/30 text-white px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-white/20 transition-colors flex items-center gap-2"
                     >
                       <span className="material-symbols-outlined text-[18px]">payments</span>
                       Tarik Dana
                     </Link>
                     <Link
-                      href={`/nasabah/${rekening.nasabahId}`}
+                      href="/rekening"
                       className="bg-white/10 backdrop-blur-sm border border-white/30 text-white px-5 py-2.5 rounded-lg font-medium text-sm hover:bg-white/20 transition-colors flex items-center gap-2"
                     >
                       <span className="material-symbols-outlined text-[18px]">event</span>
@@ -356,7 +356,7 @@ function DashboardContent() {
                   <div className="p-6 border-b border-neutral-100 flex justify-between items-center">
                     <h3 className="text-lg font-bold text-neutral-900">Transaksi Terakhir</h3>
                     <Link
-                      href={`/transaksi?tabungan=${rekening.id}`}
+                      href="/transaksi"
                       className="text-sm font-medium text-primary hover:underline"
                     >
                       Lihat Semua
@@ -418,23 +418,23 @@ function DashboardContent() {
                   <h3 className="text-lg font-bold text-neutral-900 mb-4">Aksi Cepat</h3>
                   <div className="grid grid-cols-2 gap-3">
                     <QuickAction
-                      href={`/transaksi/setor?tabungan=${rekening.id}`}
+                      href="/transaksi/setor"
                       icon="add_card"
                       label="Setor Dana"
                       tone="primary"
                     />
                     <QuickAction
-                      href={`/transaksi/tarik?tabungan=${rekening.id}`}
+                      href="/transaksi/tarik"
                       icon="payments"
                       label="Tarik Dana"
                     />
                     <QuickAction
-                      href={`/transaksi?tabungan=${rekening.id}`}
+                      href="/transaksi"
                       icon="receipt_long"
                       label="Riwayat"
                     />
                     <QuickAction
-                      href={`/nasabah/${rekening.nasabahId}`}
+                      href="/profil"
                       icon="person"
                       label="Profil Saya"
                     />

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
-import { isLoggedIn, setToken } from "@/lib/auth";
+import { isLoggedIn, setToken, setUserInfo } from "@/lib/auth";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api/v1";
 
@@ -50,6 +50,7 @@ function LoginInner() {
       }
 
       if (data.token) setToken(data.token);
+      if (data.nasabah) setUserInfo(data.nasabah);
       router.replace(safeFrom);
     } catch {
       setError("Tidak dapat terhubung ke server. Periksa koneksi Anda.");
