@@ -6,35 +6,22 @@ import { useEffect, useState } from "react";
 import AppHeader from "@/components/layout/app-header";
 import AppSidebar from "@/components/layout/app-sidebar";
 import AuthGuard from "@/components/auth-guard";
-import { authHeaders, clearToken, getCurrentUser } from "@/lib/auth";
-
-/* ─── Types ─── */
-type Nasabah = {
-  id: string;
-  nik: string;
-  nama: string;
-  email: string;
-  nomorHp: string;
-  createdAt: string;
-};
-type Tabungan = { id: string; nomorRekening: string; saldo: number | string; status: string };
-type ApiError = { error: string; message: string };
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api/v1";
+import NasabahRow from "@/components/nasabah/nasabah-row";
+import { getCurrentUser } from "@/lib/auth";
+import { ApiError, api } from "@/lib/api";
+import { nasabahApi } from "@/lib/nasabah";
+import type { Nasabah, TabunganHaji } from "@/lib/types";
 
 /* ─── Helpers ─── */
 function tanggal(s: string) {
   return new Date(s).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" });
-}
-function inisial(nama: string) {
-  return (nama ?? "?").split(" ").map((w) => w[0] ?? "").join("").substring(0, 2).toUpperCase();
 }
 
 /* ─── Content ─── */
 function ProfilContent() {
   const router = useRouter();
   const [me, setMe] = useState<Nasabah | null>(null);
-  const [rekening, setRekening] = useState<Tabungan | null>(null);
+  const [rekening, setRekening] = useState<TabunganHaji | null>(null);
   const [loading, setLoading] = useState(true);
   const [showDelete, setShowDelete] = useState(false);
 
@@ -44,18 +31,18 @@ function ProfilContent() {
       setLoading(false);
       return;
     }
-    const h = authHeaders();
-
     Promise.allSettled([
-      fetch(`${API_URL}/nasabah/${u.sub}`, { headers: h }).then((r) => r.json()),
-      fetch(`${API_URL}/tabungan-haji/nasabah/${u.sub}`, { headers: h }).then((r) => r.json()),
+      nasabahApi.get(u.sub),
+      api.get<TabunganHaji[] | { data: TabunganHaji[] }>(`/tabungan-haji/nasabah/${u.sub}`),
     ])
       .then(([naRes, rekRes]) => {
-        if (naRes.status === "fulfilled" && naRes.value && !naRes.value.error) {
+        if (naRes.status === "fulfilled") {
           setMe(naRes.value);
         }
         if (rekRes.status === "fulfilled") {
-          const list: Tabungan[] = Array.isArray(rekRes.value) ? rekRes.value : (rekRes.value.data ?? []);
+          const list: TabunganHaji[] = Array.isArray(rekRes.value)
+            ? rekRes.value
+            : (rekRes.value as { data?: TabunganHaji[] }).data ?? [];
           setRekening(list[0] ?? null);
         }
       })
@@ -71,8 +58,8 @@ function ProfilContent() {
           nasabah={me}
           hasRekening={!!rekening}
           onCancel={() => setShowDelete(false)}
-          onDeleted={() => {
-            clearToken();
+          onDeleted={async () => {
+            await nasabahApi.logout();
             router.replace("/login");
           }}
         />
@@ -105,37 +92,13 @@ function ProfilContent() {
               </div>
             ) : (
               <>
-                {/* Profile Hero */}
-                <div className="bg-white rounded-xl border border-neutral-200 shadow-sm p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6">
-                  <div className="w-24 h-24 rounded-full bg-primary/10 text-primary flex items-center justify-center text-3xl font-bold border-4 border-white shadow-md ring-1 ring-neutral-100 shrink-0 mx-auto md:mx-0">
-                    {inisial(me.nama)}
-                  </div>
-                  <div className="flex-1 text-center md:text-left">
-                    <h3 className="text-xl font-bold text-neutral-900">{me.nama}</h3>
-                    <div className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800 mt-2">
-                      Nasabah Aktif
-                    </div>
-                    <p className="text-sm text-neutral-500 mt-2">
-                      Terdaftar sejak <span className="font-medium text-neutral-700">{tanggal(me.createdAt)}</span>
-                    </p>
-                  </div>
-                  <div className="flex flex-col sm:flex-row gap-2 shrink-0">
-                    <Link
-                      href="/profil/edit"
-                      className="flex items-center justify-center gap-2 px-4 py-2.5 border border-primary text-primary rounded-lg font-medium text-sm hover:bg-primary/5 transition-colors"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">edit</span>
-                      Edit Data
-                    </Link>
-                    <button
-                      onClick={() => setShowDelete(true)}
-                      className="flex items-center justify-center gap-2 px-4 py-2.5 border border-red-200 text-red-600 rounded-lg font-medium text-sm hover:bg-red-50 transition-colors"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">delete_forever</span>
-                      Hapus Akun
-                    </button>
-                  </div>
-                </div>
+                {/* Profile Hero — pakai komponen NasabahRow reusable */}
+                <NasabahRow
+                  nasabah={me}
+                  variant="card"
+                  onEdit={() => router.push("/profil/edit")}
+                  onDelete={() => setShowDelete(true)}
+                />
 
                 {/* Detail Card */}
                 <div className="bg-white rounded-xl border border-neutral-200 shadow-sm overflow-hidden">
@@ -245,19 +208,14 @@ function DeleteAccountModal({
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${API_URL}/nasabah/${nasabah.id}`, {
-        method: "DELETE",
-        headers: authHeaders(),
-      });
-      if (!res.ok) {
-        const d: ApiError = await res.json().catch(() => ({ error: "ERR", message: "" }));
-        setError(d.message ?? "Gagal menghapus akun.");
-        setLoading(false);
-        return;
-      }
+      await nasabahApi.remove(nasabah.id);
       onDeleted();
-    } catch {
-      setError("Tidak dapat terhubung ke server.");
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.firstDetail());
+      } else {
+        setError("Tidak dapat terhubung ke server.");
+      }
       setLoading(false);
     }
   }

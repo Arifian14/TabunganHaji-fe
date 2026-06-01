@@ -6,36 +6,31 @@ import { useEffect, useState } from "react";
 import AppHeader from "@/components/layout/app-header";
 import AppSidebar from "@/components/layout/app-sidebar";
 import AuthGuard from "@/components/auth-guard";
-import { authHeaders, getCurrentUser } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth";
+import { ApiError, api } from "@/lib/api";
+import type { TabunganHaji as Tabungan } from "@/lib/types";
+import { rupiah, formatRek, formatRekMasked, onlyDigits, formatNominal } from "@/lib/format";
 
-/* ─── Types ─── */
-type Status = "AKTIF" | "SUSPEND" | "TUTUP";
-type Tabungan = {
-  id: string;
-  nomorRekening: string;
-  saldo: number | string;
-  status: Status;
-  nasabahId: string;
-};
-type ApiError = { error: string; message: string };
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api/v1";
 const MIN_NOMINAL = 100_000; /* sesuai backend SetorSchema */
 
-/* ─── Helpers ─── */
-function rupiah(n: number | string) {
-  return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(Number(n));
+const METODE_OPTIONS = [
+  { value: "TUNAI",     label: "Tunai",     icon: "payments" },
+  { value: "TRANSFER",  label: "Transfer",  icon: "swap_horiz" },
+  { value: "M_BANKING", label: "M-Banking", icon: "smartphone" },
+] as const;
+
+type Metode = typeof METODE_OPTIONS[number]["value"];
+
+/* Generate idempotency key untuk cegah double-submit (refresh / network retry) */
+function newIdempotencyKey(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  /* Fallback: timestamp + random */
+  return `setor-${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
 }
-function formatRek(no: string) {
-  return no?.replace(/(\d{4})(\d{4})(\d+)/, "$1 $2 $3") ?? no;
-}
-function onlyDigits(s: string) {
-  return s.replace(/\D/g, "");
-}
-function formatNominal(n: string) {
-  if (!n) return "";
-  return Number(n).toLocaleString("id-ID");
-}
+
+type FieldErrors = Partial<Record<"nominal" | "metode", string>>;
 
 /* ─── Content ─── */
 function SetorContent() {
@@ -45,9 +40,15 @@ function SetorContent() {
   const [loading, setLoading] = useState(true);
 
   const [nominalRaw, setNominalRaw] = useState("");
+  const [metode, setMetode] = useState<Metode | "">("");
+  const [revealRek, setRevealRek] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<{ nominal: number; saldoSesudah: number } | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [success, setSuccess] = useState<{ nominal: number; saldoSesudah: number; metode: string; referensi: string } | null>(null);
+
+  /* Idempotency key — di-generate sekali per "session form", regenerate setelah sukses */
+  const [idempotencyKey, setIdempotencyKey] = useState<string>(() => newIdempotencyKey());
 
   /* fetch rekening saya */
   useEffect(() => {
@@ -56,53 +57,83 @@ function SetorContent() {
       setLoading(false);
       return;
     }
-    fetch(`${API_URL}/tabungan-haji/nasabah/${u.sub}`, { headers: authHeaders() })
-      .then((r) => r.json())
+    api
+      .get<Tabungan[] | { data: Tabungan[] }>(`/tabungan-haji/nasabah/${u.sub}`)
       .then((d) => {
         const list: Tabungan[] = Array.isArray(d) ? d : (d.data ?? []);
         setRekening(list[0] ?? null);
       })
+      .catch(() => {/* AuthGuard handle 401 */})
       .finally(() => setLoading(false));
   }, []);
 
   const nominalNum = Number(nominalRaw || 0);
   const validNominal = nominalNum >= MIN_NOMINAL;
   const isAktif = rekening?.status === "AKTIF";
-  const canSubmit = !!rekening && isAktif && validNominal && !submitting;
+  const canSubmit = !!rekening && isAktif && validNominal && !!metode && !submitting;
 
   function setNominalChip(v: number) {
     setNominalRaw(String(v));
+    setFieldErrors((f) => ({ ...f, nominal: undefined }));
     if (error) setError(null);
   }
 
+  /* Map ApiError.details ke fieldErrors per-input */
+  function applyValidationErrors(err: ApiError) {
+    const fe: FieldErrors = {};
+    if (err.details) {
+      if (err.details.nominal?.[0]) fe.nominal = err.details.nominal[0];
+      if (err.details.metode?.[0])  fe.metode  = err.details.metode[0];
+    }
+    setFieldErrors(fe);
+  }
+
   async function handleSubmit() {
+    /* FE validasi dasar dulu */
+    const fe: FieldErrors = {};
+    if (!validNominal) fe.nominal = `Nominal minimal ${rupiah(MIN_NOMINAL)}.`;
+    if (!metode)       fe.metode  = "Pilih metode setor.";
+    if (Object.keys(fe).length > 0) {
+      setFieldErrors(fe);
+      return;
+    }
+
     if (!rekening) {
       setError("Rekening tidak ditemukan.");
       return;
     }
-    if (!validNominal) {
-      setError(`Nominal minimal ${rupiah(MIN_NOMINAL)}.`);
-      return;
-    }
+
     setSubmitting(true);
     setError(null);
+    setFieldErrors({});
+
     try {
-      const res = await fetch(`${API_URL}/tabungan-haji/${rekening.id}/setor`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...authHeaders() },
-        body: JSON.stringify({ nominal: nominalNum }),
-      });
-      const d = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setError((d as ApiError).message ?? "Gagal mencatat setoran.");
-        setSubmitting(false);
-        return;
-      }
+      /* POST dengan Idempotency-Key header */
+      const d = await api.post<{ id: string; saldoSesudah: number | string; referensi: string }>(
+        `/tabungan-haji/${rekening.id}/setor`,
+        { nominal: nominalNum, metode },
+        { init: { headers: { "Idempotency-Key": idempotencyKey } } }
+      );
+
       const saldoSesudah = Number(d.saldoSesudah ?? Number(rekening.saldo) + nominalNum);
-      setSuccess({ nominal: nominalNum, saldoSesudah });
+      setSuccess({
+        nominal: nominalNum,
+        saldoSesudah,
+        metode: metode as string,
+        referensi: d.referensi,
+      });
+
+      /* Regenerate key untuk submit berikutnya (kalau user tidak redirect) */
+      setIdempotencyKey(newIdempotencyKey());
+
       setTimeout(() => router.replace("/rekening"), 1800);
-    } catch {
-      setError("Tidak dapat terhubung ke server. Periksa koneksi Anda.");
+    } catch (err) {
+      if (err instanceof ApiError) {
+        applyValidationErrors(err);
+        setError(err.firstDetail());
+      } else {
+        setError("Tidak dapat terhubung ke server. Periksa koneksi Anda.");
+      }
       setSubmitting(false);
     }
   }
@@ -153,14 +184,23 @@ function SetorContent() {
         </div>
         <h2 className="text-lg font-semibold text-neutral-800">Setoran Berhasil</h2>
         <p className="text-sm text-neutral-500 mt-1">
-          Setoran <span className="font-semibold text-neutral-800">{rupiah(success.nominal)}</span> telah masuk ke rekening{" "}
-          <span className="font-mono text-neutral-800">{formatRek(rekening.nomorRekening)}</span>.
+          Setoran <span className="font-semibold text-neutral-800">{rupiah(success.nominal)}</span> via{" "}
+          <span className="font-semibold text-neutral-800">
+            {METODE_OPTIONS.find((m) => m.value === success.metode)?.label ?? success.metode}
+          </span>{" "}
+          telah masuk ke rekening{" "}
+          <span className="font-mono text-neutral-800">{formatRekMasked(rekening.nomorRekening)}</span>.
         </p>
         <div className="mt-4 bg-emerald-50 border border-emerald-100 rounded-lg px-4 py-2.5">
           <p className="text-xs text-emerald-700">Saldo Sekarang</p>
           <p className="text-lg font-bold text-emerald-800">{rupiah(success.saldoSesudah)}</p>
         </div>
-        <p className="text-xs text-neutral-400 mt-3">Mengalihkan ke dashboard...</p>
+        {success.referensi && (
+          <p className="text-[10px] text-neutral-400 mt-3 font-mono">
+            Ref: {success.referensi}
+          </p>
+        )}
+        <p className="text-xs text-neutral-400 mt-1">Mengalihkan ke rekening...</p>
       </div>
     );
   }
@@ -200,7 +240,7 @@ function SetorContent() {
       )}
 
       <div className="p-6 md:p-8 space-y-5">
-        {/* Kartu rekening */}
+        {/* Kartu rekening (dengan masking + toggle) */}
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-1.5">Rekening Saya</label>
           <div
@@ -212,7 +252,21 @@ function SetorContent() {
             </div>
             <div className="relative z-10">
               <p className="text-white/70 text-xs">Nomor Rekening</p>
-              <p className="text-lg font-bold font-mono tracking-widest">{formatRek(rekening.nomorRekening)}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-lg font-bold font-mono tracking-widest">
+                  {revealRek ? formatRek(rekening.nomorRekening) : formatRekMasked(rekening.nomorRekening)}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setRevealRek((v) => !v)}
+                  className="text-white/70 hover:text-white transition-colors p-1 rounded hover:bg-white/10"
+                  title={revealRek ? "Sembunyikan" : "Tampilkan"}
+                >
+                  <span className="material-symbols-outlined text-[18px]">
+                    {revealRek ? "visibility_off" : "visibility"}
+                  </span>
+                </button>
+              </div>
               <div className="mt-4 pt-3 border-t border-white/20">
                 <p className="text-white/70 text-xs">Saldo Saat Ini</p>
                 <p className="text-2xl font-extrabold tracking-tight">{rupiah(rekening.saldo)}</p>
@@ -233,13 +287,29 @@ function SetorContent() {
               type="text"
               inputMode="numeric"
               value={formatNominal(nominalRaw)}
-              onChange={(e) => { setNominalRaw(onlyDigits(e.target.value)); if (error) setError(null); }}
+              onChange={(e) => {
+                setNominalRaw(onlyDigits(e.target.value));
+                setFieldErrors((f) => ({ ...f, nominal: undefined }));
+                if (error) setError(null);
+              }}
               placeholder="0"
               disabled={!isAktif}
-              className="w-full pl-12 pr-4 py-3 bg-white border border-neutral-300 rounded-lg text-lg font-semibold text-neutral-900 focus:border-primary focus:ring-1 focus:ring-primary transition-colors outline-none disabled:bg-neutral-50 disabled:cursor-not-allowed placeholder:text-neutral-300"
+              aria-invalid={!!fieldErrors.nominal}
+              className={`w-full pl-12 pr-4 py-3 bg-white border rounded-lg text-lg font-semibold text-neutral-900 focus:ring-1 transition-colors outline-none disabled:bg-neutral-50 disabled:cursor-not-allowed placeholder:text-neutral-300 ${
+                fieldErrors.nominal
+                  ? "border-red-400 focus:border-red-500 focus:ring-red-500"
+                  : "border-neutral-300 focus:border-primary focus:ring-primary"
+              }`}
             />
           </div>
-          <p className="mt-1.5 text-xs text-neutral-500">Minimum {rupiah(MIN_NOMINAL)}.</p>
+          {fieldErrors.nominal ? (
+            <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+              <span className="material-symbols-outlined text-[14px]">error</span>
+              {fieldErrors.nominal}
+            </p>
+          ) : (
+            <p className="mt-1.5 text-xs text-neutral-500">Minimum {rupiah(MIN_NOMINAL)}.</p>
+          )}
 
           {/* Quick chips */}
           <div className="mt-3 flex flex-wrap gap-2">
@@ -255,6 +325,42 @@ function SetorContent() {
               </button>
             ))}
           </div>
+        </div>
+
+        {/* Metode dropdown */}
+        <div>
+          <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+            Metode Setor <span className="text-red-500">*</span>
+          </label>
+          <div className="grid grid-cols-3 gap-2">
+            {METODE_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                disabled={!isAktif}
+                onClick={() => {
+                  setMetode(opt.value);
+                  setFieldErrors((f) => ({ ...f, metode: undefined }));
+                }}
+                className={`flex flex-col items-center justify-center gap-1.5 p-3 rounded-lg border-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                  metode === opt.value
+                    ? "border-primary bg-primary/5 text-primary"
+                    : fieldErrors.metode
+                    ? "border-red-300 hover:border-red-400 text-neutral-700"
+                    : "border-neutral-200 hover:border-primary/40 text-neutral-700"
+                }`}
+              >
+                <span className="material-symbols-outlined text-[24px]">{opt.icon}</span>
+                <span className="text-xs font-semibold">{opt.label}</span>
+              </button>
+            ))}
+          </div>
+          {fieldErrors.metode && (
+            <p className="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+              <span className="material-symbols-outlined text-[14px]">error</span>
+              {fieldErrors.metode}
+            </p>
+          )}
         </div>
 
         {/* Estimasi saldo setelah */}

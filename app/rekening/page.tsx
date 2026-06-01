@@ -7,57 +7,11 @@ import AppHeader from "@/components/layout/app-header";
 import AppSidebar from "@/components/layout/app-sidebar";
 import AuthGuard from "@/components/auth-guard";
 import { authHeaders, getCurrentUser } from "@/lib/auth";
-
-/* ─── Types ─── */
-type Status = "AKTIF" | "SUSPEND" | "TUTUP";
-type Tabungan = {
-  id: string;
-  nomorRekening: string;
-  saldo: number | string;
-  status: Status;
-  dibukaAt: string;
-  nasabahId: string;
-};
-type Transaksi = {
-  id: string;
-  jenis: "SETOR" | "TARIK";
-  nominal: number | string;
-  saldoSesudah: number | string;
-  waktu: string;
-};
-type Estimasi = {
-  setoranAwalMinimal: number | string;
-  sudahMemenuhiSetoranAwal: boolean;
-  kekuranganSetoran: number | string;
-  nomorPorsi: number;
-  kuotaTahunan: number;
-  tahunSekarang: number;
-  tahunTunggu: number | null;
-  estimasiTahunBerangkat: number | null;
-};
-type ApiError = { error: string; message: string };
+import { ApiError } from "@/lib/api";
+import type { TabunganHaji as Tabungan, Transaksi, Estimasi, Status } from "@/lib/types";
+import { rupiah, tanggal, tanggalJamSingkat as tanggalJam, formatRek, formatRekMasked } from "@/lib/format";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api/v1";
-
-/* ─── Helpers ─── */
-function rupiah(n: number | string) {
-  return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(Number(n));
-}
-function tanggal(s: string) {
-  return new Date(s).toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" });
-}
-function tanggalJam(s: string) {
-  return new Date(s).toLocaleString("id-ID", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
-}
-function formatRek(no: string) {
-  return no?.replace(/(\d{4})(\d{4})(\d+)/, "$1 $2 $3") ?? no;
-}
-
-const STATUS_BADGE: Record<Status, string> = {
-  AKTIF:   "bg-emerald-50 text-emerald-700 border-emerald-200",
-  SUSPEND: "bg-amber-50 text-amber-700 border-amber-200",
-  TUTUP:   "bg-red-50 text-red-700 border-red-200",
-};
 
 /* ─── Content ─── */
 function RekeningContent() {
@@ -66,9 +20,9 @@ function RekeningContent() {
   const [transaksi, setTransaksi] = useState<Transaksi[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [showStatus, setShowStatus] = useState(false);
   const [showEstimasi, setShowEstimasi] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
+  const [revealRek, setRevealRek] = useState(false);
 
   useEffect(() => {
     const u = getCurrentUser();
@@ -102,17 +56,6 @@ function RekeningContent() {
       <AppSidebar activeHref="/rekening" />
 
       {/* Modals */}
-      {showStatus && rekening && (
-        <StatusModal
-          tabunganId={rekening.id}
-          current={rekening.status}
-          onClose={() => setShowStatus(false)}
-          onUpdated={(s) => {
-            setRekening((r) => (r ? { ...r, status: s } : r));
-            setShowStatus(false);
-          }}
-        />
-      )}
       {showEstimasi && rekening && (
         <EstimasiModal tabunganId={rekening.id} onClose={() => setShowEstimasi(false)} />
       )}
@@ -180,11 +123,25 @@ function RekeningContent() {
                   </div>
                   <div className="relative z-10">
                     <div className="flex justify-between items-start mb-6">
-                      <div>
+                      <div className="min-w-0">
                         <h3 className="text-white/70 text-sm font-medium mb-1">Rekening Tabungan Haji</h3>
-                        <div className="text-2xl font-bold tracking-widest font-mono">{formatRek(rekening.nomorRekening)}</div>
+                        <div className="flex items-center gap-2">
+                          <div className="text-2xl font-bold tracking-widest font-mono">
+                            {revealRek ? formatRek(rekening.nomorRekening) : formatRekMasked(rekening.nomorRekening)}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => setRevealRek((v) => !v)}
+                            className="text-white/70 hover:text-white transition-colors p-1 rounded hover:bg-white/10"
+                            title={revealRek ? "Sembunyikan" : "Tampilkan"}
+                          >
+                            <span className="material-symbols-outlined text-[20px]">
+                              {revealRek ? "visibility_off" : "visibility"}
+                            </span>
+                          </button>
+                        </div>
                       </div>
-                      <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold tracking-wider border border-white/30 flex items-center gap-1.5">
+                      <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold tracking-wider border border-white/30 flex items-center gap-1.5 shrink-0">
                         <div className={`w-1.5 h-1.5 rounded-full ${rekening.status === "AKTIF" ? "bg-green-400" : rekening.status === "SUSPEND" ? "bg-amber-300" : "bg-red-400"}`} />
                         {rekening.status}
                       </div>
@@ -212,12 +169,10 @@ function RekeningContent() {
                       Aksi Rekening
                     </h3>
                   </div>
-                  <div className="p-6 grid grid-cols-2 md:grid-cols-3 gap-3">
+                  <div className="p-6 grid grid-cols-2 md:grid-cols-4 gap-3">
                     <ActionTile href="/transaksi/setor" icon="add_card"   label="Setor Dana"      tone="primary" />
                     <ActionTile href="/transaksi/tarik" icon="payments"   label="Tarik Dana"      tone="amber" />
                     <ActionTile onClick={() => setShowEstimasi(true)} icon="event"       label="Estimasi Haji"   tone="info" />
-                    <ActionTile onClick={() => setShowStatus(true)}   icon="edit_note"   label="Ubah Status"     tone="neutral" />
-                    <ActionTile href="/transaksi"        icon="receipt_long" label="Riwayat" tone="neutral" />
                     <ActionTile onClick={() => setShowDelete(true)}   icon="delete"      label="Hapus Rekening"  tone="danger" />
                   </div>
                 </div>
@@ -399,64 +354,6 @@ function InfoBox({ label, value }: { label: string; value: string }) {
   );
 }
 
-/* ─── Status Modal ─── */
-function StatusModal({
-  tabunganId, current, onClose, onUpdated,
-}: {
-  tabunganId: string; current: Status;
-  onClose: () => void; onUpdated: (s: Status) => void;
-}) {
-  const [selected, setSelected] = useState<Status>(current);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const options: Status[] = ["AKTIF", "SUSPEND", "TUTUP"];
-
-  async function save() {
-    setLoading(true); setError(null);
-    try {
-      const res = await fetch(`${API_URL}/tabungan-haji/${tabunganId}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", ...authHeaders() },
-        body: JSON.stringify({ status: selected }),
-      });
-      if (!res.ok) {
-        const d = await res.json().catch(() => ({}));
-        setError(d.message ?? "Gagal mengubah status.");
-        setLoading(false);
-        return;
-      }
-      onUpdated(selected);
-    } catch {
-      setError("Tidak dapat terhubung ke server.");
-      setLoading(false);
-    }
-  }
-
-  return (
-    <ModalShell onClose={onClose} maxWidth="md">
-      <h3 className="text-base font-semibold text-neutral-900 mb-1">Ubah Status Rekening</h3>
-      <p className="text-sm text-neutral-500 mb-4">Pilih status baru untuk rekening tabungan haji Anda.</p>
-      <div className="space-y-2">
-        {options.map((opt) => (
-          <label key={opt} className={`flex items-center gap-3 px-4 py-3 rounded-lg border cursor-pointer transition-colors ${selected === opt ? "border-primary bg-primary/5" : "border-neutral-200 hover:bg-neutral-50"}`}>
-            <input type="radio" name="status" checked={selected === opt} onChange={() => setSelected(opt)} className="accent-primary" />
-            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${STATUS_BADGE[opt]}`}>{opt}</span>
-            {opt === current && <span className="text-xs text-neutral-400 ml-auto">saat ini</span>}
-          </label>
-        ))}
-      </div>
-      {error && <p className="text-sm text-red-600 mt-3">{error}</p>}
-      <div className="flex justify-end gap-3 pt-5">
-        <button onClick={onClose} disabled={loading} className="px-4 py-2 text-sm font-medium border border-neutral-300 text-neutral-700 rounded-lg hover:bg-neutral-50 transition-colors disabled:opacity-50">Batal</button>
-        <button onClick={save} disabled={loading || selected === current} className="px-4 py-2 text-sm font-medium bg-primary text-white rounded-lg hover:opacity-90 transition-colors disabled:opacity-50 flex items-center gap-2">
-          {loading && <span className="material-symbols-outlined text-sm animate-spin">progress_activity</span>}
-          Simpan
-        </button>
-      </div>
-    </ModalShell>
-  );
-}
-
 /* ─── Delete Rekening Modal ─── */
 function DeleteRekeningModal({
   rekening, onCancel, onDeleted,
@@ -474,14 +371,18 @@ function DeleteRekeningModal({
         headers: authHeaders(),
       });
       if (!res.ok) {
-        const d: ApiError = await res.json().catch(() => ({ error: "ERR", message: "" }));
+        const d = await res.json().catch(() => ({ message: "" }));
         setError(d.message ?? "Gagal menghapus rekening. Pastikan saldo Rp 0 dan tidak ada transaksi.");
         setLoading(false);
         return;
       }
       onDeleted();
-    } catch {
-      setError("Tidak dapat terhubung ke server.");
+    } catch (err) {
+      if (err instanceof ApiError) {
+        setError(err.firstDetail());
+      } else {
+        setError("Tidak dapat terhubung ke server.");
+      }
       setLoading(false);
     }
   }

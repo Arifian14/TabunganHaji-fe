@@ -6,18 +6,39 @@ import { useEffect, useState } from "react";
 import AppHeader from "@/components/layout/app-header";
 import AppSidebar from "@/components/layout/app-sidebar";
 import AuthGuard from "@/components/auth-guard";
-import { authHeaders, getCurrentUser, getUserInfo, setUserInfo } from "@/lib/auth";
+import { getCurrentUser, getUserInfo, setUserInfo } from "@/lib/auth";
+import { ApiError } from "@/lib/api";
+import { nasabahApi, type UpdateNasabahInput } from "@/lib/nasabah";
 
-type FormFields = { nama: string; email: string; nomorHp: string };
-type ApiError = { error: string; message: string; details?: Record<string, string[]> };
+type FormFields = UpdateNasabahInput & { nama: string; email: string; nomorHp: string };
+type FieldName = "nama" | "email" | "nomorHp";
+type FieldErrors = Partial<Record<FieldName, string>>;
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api/v1";
+/* Helper visual error */
+function inputClass(hasError?: string): string {
+  return `block w-full pl-10 pr-3 py-2.5 border rounded-lg text-sm focus:ring-2 bg-white placeholder:text-neutral-400 transition-colors disabled:opacity-60 ${
+    hasError
+      ? "border-red-400 focus:ring-red-500 focus:border-red-500"
+      : "border-neutral-300 focus:ring-primary focus:border-primary"
+  }`;
+}
+
+function FieldErrorMsg({ msg }: { msg?: string }) {
+  if (!msg) return null;
+  return (
+    <p className="mt-1 text-xs text-red-600 flex items-start gap-1">
+      <span className="material-symbols-outlined text-[14px] mt-px">error</span>
+      <span>{msg}</span>
+    </p>
+  );
+}
 
 function ProfilEditContent() {
   const router = useRouter();
 
   const [nik, setNik] = useState("");
   const [fields, setFields] = useState<FormFields>({ nama: "", email: "", nomorHp: "" });
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -29,12 +50,14 @@ function ProfilEditContent() {
       setLoading(false);
       return;
     }
-    fetch(`${API_URL}/nasabah/${u.sub}`, { headers: authHeaders() })
-      .then((r) => r.json())
+    nasabahApi
+      .get(u.sub)
       .then((d) => {
-        if (d?.error) return;
         setNik(d.nik ?? "");
         setFields({ nama: d.nama ?? "", email: d.email ?? "", nomorHp: d.nomorHp ?? "" });
+      })
+      .catch(() => {
+        /* AuthGuard akan handle 401 lewat fetch interceptor */
       })
       .finally(() => setLoading(false));
   }, []);
@@ -42,7 +65,20 @@ function ProfilEditContent() {
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
     setFields((prev) => ({ ...prev, [name]: value }));
+    setFieldErrors((f) => ({ ...f, [name]: undefined }));
     if (error) setError(null);
+  }
+
+  /* Map ApiError.details ke fieldErrors per-input */
+  function applyValidationErrors(err: ApiError) {
+    const fe: FieldErrors = {};
+    if (err.details) {
+      (["nama", "email", "nomorHp"] as FieldName[]).forEach((f) => {
+        const msg = err.details?.[f]?.[0];
+        if (msg) fe[f] = msg;
+      });
+    }
+    setFieldErrors(fe);
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -51,29 +87,31 @@ function ProfilEditContent() {
     if (!u) return;
     setSaving(true);
     setError(null);
+    setFieldErrors({});
     try {
-      const res = await fetch(`${API_URL}/nasabah/${u.sub}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json", ...authHeaders() },
-        body: JSON.stringify(fields),
-      });
-      const d = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        const err = d as ApiError;
-        const detailMsg = err.details ? Object.values(err.details).flat()[0] : undefined;
-        setError(detailMsg ?? err.message ?? "Gagal menyimpan perubahan.");
-        setSaving(false);
-        return;
-      }
+      await nasabahApi.update(u.sub, fields);
+
       /* Update cache supaya avatar di header & data di page lain ikut update */
       const currentInfo = getUserInfo();
       if (currentInfo) {
-        setUserInfo({ ...currentInfo, nama: fields.nama, email: fields.email, nomorHp: fields.nomorHp });
+        setUserInfo({
+          ...currentInfo,
+          nama: fields.nama,
+          email: fields.email,
+          nomorHp: fields.nomorHp,
+        });
       }
       setSuccess(true);
       setTimeout(() => router.replace("/profil"), 900);
-    } catch {
-      setError("Tidak dapat terhubung ke server. Periksa koneksi Anda.");
+    } catch (err) {
+      if (err instanceof ApiError) {
+        applyValidationErrors(err);
+        if (!err.details || Object.keys(err.details).length === 0) {
+          setError(err.message);
+        }
+      } else {
+        setError("Tidak dapat terhubung ke server. Periksa koneksi Anda.");
+      }
       setSaving(false);
     }
   }
@@ -184,9 +222,11 @@ function ProfilEditContent() {
                         <input
                           id="nama" name="nama" type="text" required minLength={3} maxLength={100}
                           placeholder="Sesuai KTP" value={fields.nama} onChange={handleChange} disabled={saving}
-                          className="block w-full pl-10 pr-3 py-2.5 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary bg-white placeholder:text-neutral-400 transition-colors disabled:opacity-60"
+                          aria-invalid={!!fieldErrors.nama}
+                          className={inputClass(fieldErrors.nama)}
                         />
                       </div>
+                      <FieldErrorMsg msg={fieldErrors.nama} />
                     </div>
 
                     {/* Email */}
@@ -201,9 +241,11 @@ function ProfilEditContent() {
                         <input
                           id="email" name="email" type="email" required
                           placeholder="email@anda.com" value={fields.email} onChange={handleChange} disabled={saving}
-                          className="block w-full pl-10 pr-3 py-2.5 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary bg-white placeholder:text-neutral-400 transition-colors disabled:opacity-60"
+                          aria-invalid={!!fieldErrors.email}
+                          className={inputClass(fieldErrors.email)}
                         />
                       </div>
+                      <FieldErrorMsg msg={fieldErrors.email} />
                     </div>
 
                     {/* Nomor HP */}
@@ -218,10 +260,15 @@ function ProfilEditContent() {
                         <input
                           id="nomorHp" name="nomorHp" type="tel" required pattern="^08[0-9]{8,11}$"
                           placeholder="08xxxxxxxxxx" value={fields.nomorHp} onChange={handleChange} disabled={saving}
-                          className="block w-full pl-10 pr-3 py-2.5 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary bg-white placeholder:text-neutral-400 transition-colors disabled:opacity-60"
+                          aria-invalid={!!fieldErrors.nomorHp}
+                          className={inputClass(fieldErrors.nomorHp)}
                         />
                       </div>
-                      <p className="mt-1 text-xs text-neutral-500">Format: Diawali &apos;08&apos;, 10–13 digit.</p>
+                      {fieldErrors.nomorHp ? (
+                        <FieldErrorMsg msg={fieldErrors.nomorHp} />
+                      ) : (
+                        <p className="mt-1 text-xs text-neutral-500">Format: Diawali &apos;08&apos;, 10–13 digit.</p>
+                      )}
                     </div>
                   </div>
                 </div>

@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { clearToken } from "@/lib/auth";
+import { nasabahApi } from "@/lib/nasabah";
 
 type NavItem = {
   href: string;
@@ -22,9 +23,12 @@ type AppSidebarProps = {
 
 export default function AppSidebar({ activeHref = "/dashboard" }: AppSidebarProps) {
   const router = useRouter();
+  const [loggingOut, setLoggingOut] = useState(false);
 
-  function handleLogout() {
-    clearToken();
+  async function handleLogout() {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    await nasabahApi.logout();
     router.push("/login");
   }
 
@@ -74,10 +78,13 @@ export default function AppSidebar({ activeHref = "/dashboard" }: AppSidebarProp
       <div className="px-4 py-3 mt-auto border-t border-neutral-200 pt-4">
         <button
           onClick={handleLogout}
-          className="w-full flex justify-center items-center gap-2 border border-red-300 text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
+          disabled={loggingOut}
+          className="w-full flex justify-center items-center gap-2 border border-red-300 text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          <span className="material-symbols-outlined text-[18px]">logout</span>
-          Log Out
+          <span className={`material-symbols-outlined text-[18px] ${loggingOut ? "animate-spin" : ""}`}>
+            {loggingOut ? "progress_activity" : "logout"}
+          </span>
+          {loggingOut ? "Keluar..." : "Log Out"}
         </button>
       </div>
     </aside>

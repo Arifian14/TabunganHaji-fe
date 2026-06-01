@@ -4,27 +4,40 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { setToken, setUserInfo } from "@/lib/auth";
+import { ApiError } from "@/lib/api";
+import { nasabahApi, type CreateNasabahInput } from "@/lib/nasabah";
 
 type FormState = "idle" | "loading" | "auto-login" | "success" | "error";
+type FieldName = keyof CreateNasabahInput;
+type FieldErrors = Partial<Record<FieldName, string>>;
 
-type FormFields = {
-  nik: string;
-  nama: string;
-  email: string;
-  nomorHp: string;
-  password: string;
-};
+/* Helper: kelas input dengan border merah saat error */
+function inputClass(hasError?: string, padRight: string = "pr-3"): string {
+  return `block w-full pl-10 ${padRight} py-2.5 border rounded-lg text-sm focus:ring-2 bg-white placeholder:text-neutral-400 transition-colors disabled:opacity-60 ${
+    hasError
+      ? "border-red-400 focus:ring-red-500 focus:border-red-500"
+      : "border-neutral-300 focus:ring-primary focus:border-primary"
+  }`;
+}
 
-type ApiError = { error: string; message: string };
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api/v1";
+/* Helper: pesan error di bawah input */
+function FieldErrorMsg({ msg }: { msg?: string }) {
+  if (!msg) return null;
+  return (
+    <p className="mt-1 text-xs text-red-600 flex items-start gap-1">
+      <span className="material-symbols-outlined text-[14px] mt-px">error</span>
+      <span>{msg}</span>
+    </p>
+  );
+}
 
 export default function RegisterForm() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [formState, setFormState] = useState<FormState>("idle");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [fields, setFields] = useState<FormFields>({
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [fields, setFields] = useState<CreateNasabahInput>({
     nik: "",
     nama: "",
     email: "",
@@ -35,53 +48,62 @@ export default function RegisterForm() {
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
     const { name, value } = e.target;
     setFields((prev) => ({ ...prev, [name]: value }));
+    /* Bersihkan error field saat user mengetik ulang */
+    setFieldErrors((f) => ({ ...f, [name]: undefined }));
     if (errorMessage) setErrorMessage(null);
+  }
+
+  /* Map ApiError.details ke fieldErrors */
+  function applyValidationErrors(err: ApiError) {
+    const fe: FieldErrors = {};
+    if (err.details) {
+      const fields: FieldName[] = ["nik", "nama", "email", "nomorHp", "password"];
+      for (const f of fields) {
+        const msg = err.details[f]?.[0];
+        if (msg) fe[f] = msg;
+      }
+    }
+    setFieldErrors(fe);
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setFormState("loading");
     setErrorMessage(null);
+    setFieldErrors({});
 
     try {
-      const res = await fetch(`${API_URL}/nasabah`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(fields),
-      });
+      /* CREATE — registrasi via controller */
+      await nasabahApi.create(fields);
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        const err = data as ApiError;
-        setErrorMessage(err.message ?? "Terjadi kesalahan. Silakan coba lagi.");
-        setFormState("error");
-        return;
-      }
-
-      /* Auto-login dengan kredensial yang baru saja didaftar */
+      /* Auto-login pakai kredensial yang baru saja didaftar */
       setFormState("auto-login");
-      const loginRes = await fetch(`${API_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: fields.email, password: fields.password }),
-      });
-
-      const loginData = await loginRes.json();
-
-      if (!loginRes.ok || !loginData.token) {
-        /* Akun dibuat tapi auto-login gagal — arahkan ke /login dengan email auto-fill */
+      try {
+        const loginResult = await nasabahApi.login({
+          email: fields.email,
+          password: fields.password,
+        });
+        setToken(loginResult.token);
+        setUserInfo(loginResult.nasabah);
+        setFormState("success");
+        router.replace("/dashboard");
+        return;
+      } catch {
+        /* Akun dibuat tapi auto-login gagal — arahkan ke /login */
         setFormState("success");
         setTimeout(() => router.replace("/login"), 1200);
         return;
       }
-
-      setToken(loginData.token);
-      if (loginData.nasabah) setUserInfo(loginData.nasabah);
-      setFormState("success");
-      router.replace("/dashboard");
-    } catch {
-      setErrorMessage("Tidak dapat terhubung ke server. Periksa koneksi Anda.");
+    } catch (err) {
+      if (err instanceof ApiError) {
+        applyValidationErrors(err);
+        /* Banner global juga diisi kalau ada general error (non-field) */
+        if (!err.details || Object.keys(err.details).length === 0) {
+          setErrorMessage(err.message);
+        }
+      } else {
+        setErrorMessage("Tidak dapat terhubung ke server. Periksa koneksi Anda.");
+      }
       setFormState("error");
     }
   }
@@ -172,10 +194,15 @@ export default function RegisterForm() {
                   value={fields.nik}
                   onChange={handleChange}
                   disabled={isLoading}
-                  className="block w-full pl-10 pr-3 py-2.5 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary bg-white placeholder:text-neutral-400 transition-colors disabled:opacity-60"
+                  aria-invalid={!!fieldErrors.nik}
+                  className={inputClass(fieldErrors.nik)}
                 />
               </div>
-              <p className="mt-1 text-xs text-neutral-500">NIK harus 16 digit sesuai KTP.</p>
+              {fieldErrors.nik ? (
+                <FieldErrorMsg msg={fieldErrors.nik} />
+              ) : (
+                <p className="mt-1 text-xs text-neutral-500">NIK harus 16 digit sesuai KTP.</p>
+              )}
             </div>
 
             {/* Nama Lengkap */}
@@ -198,9 +225,11 @@ export default function RegisterForm() {
                   value={fields.nama}
                   onChange={handleChange}
                   disabled={isLoading}
-                  className="block w-full pl-10 pr-3 py-2.5 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary bg-white placeholder:text-neutral-400 transition-colors disabled:opacity-60"
+                  aria-invalid={!!fieldErrors.nama}
+                  className={inputClass(fieldErrors.nama)}
                 />
               </div>
+              <FieldErrorMsg msg={fieldErrors.nama} />
             </div>
 
             {/* Email */}
@@ -221,10 +250,15 @@ export default function RegisterForm() {
                   value={fields.email}
                   onChange={handleChange}
                   disabled={isLoading}
-                  className="block w-full pl-10 pr-3 py-2.5 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary bg-white placeholder:text-neutral-400 transition-colors disabled:opacity-60"
+                  aria-invalid={!!fieldErrors.email}
+                  className={inputClass(fieldErrors.email)}
                 />
               </div>
-              <p className="mt-1 text-xs text-neutral-500">Email akan dipakai untuk login.</p>
+              {fieldErrors.email ? (
+                <FieldErrorMsg msg={fieldErrors.email} />
+              ) : (
+                <p className="mt-1 text-xs text-neutral-500">Email akan dipakai untuk login.</p>
+              )}
             </div>
 
             {/* Nomor HP */}
@@ -246,10 +280,15 @@ export default function RegisterForm() {
                   value={fields.nomorHp}
                   onChange={handleChange}
                   disabled={isLoading}
-                  className="block w-full pl-10 pr-3 py-2.5 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary bg-white placeholder:text-neutral-400 transition-colors disabled:opacity-60"
+                  aria-invalid={!!fieldErrors.nomorHp}
+                  className={inputClass(fieldErrors.nomorHp)}
                 />
               </div>
-              <p className="mt-1 text-xs text-neutral-500">Format: Diawali &apos;08&apos;, 10–13 digit.</p>
+              {fieldErrors.nomorHp ? (
+                <FieldErrorMsg msg={fieldErrors.nomorHp} />
+              ) : (
+                <p className="mt-1 text-xs text-neutral-500">Format: Diawali &apos;08&apos;, 10–13 digit.</p>
+              )}
             </div>
           </div>
 
@@ -273,7 +312,8 @@ export default function RegisterForm() {
                 value={fields.password}
                 onChange={handleChange}
                 disabled={isLoading}
-                className="block w-full pl-10 pr-10 py-2.5 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-primary bg-white placeholder:text-neutral-400 transition-colors disabled:opacity-60"
+                aria-invalid={!!fieldErrors.password}
+                className={inputClass(fieldErrors.password, "pr-10")}
               />
               <button
                 type="button"
@@ -285,7 +325,11 @@ export default function RegisterForm() {
                 </span>
               </button>
             </div>
-            <p className="mt-1 text-xs text-neutral-500">Minimal 8 karakter.</p>
+            {fieldErrors.password ? (
+              <FieldErrorMsg msg={fieldErrors.password} />
+            ) : (
+              <p className="mt-1 text-xs text-neutral-500">Minimal 8 karakter.</p>
+            )}
           </div>
         </div>
       </div>

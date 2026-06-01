@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import AppHeader from "@/components/layout/app-header";
 import AppSidebar from "@/components/layout/app-sidebar";
 import AuthGuard from "@/components/auth-guard";
-import { authHeaders, getCurrentUser } from "@/lib/auth";
+import { authHeaders, getCurrentUser, getUserInfo } from "@/lib/auth";
 
 /* ─── Types ─── */
 type Status = "AKTIF" | "SUSPEND" | "TUTUP";
@@ -195,8 +195,9 @@ function DashboardContent() {
     .reduce((s, t) => s + Number(t.nominal), 0);
   const lastTx = transaksi.slice(0, 5);
 
-  const displayName = nasabah?.nama ?? getCurrentUser()?.email ?? "Pengguna";
-  const firstName = displayName.split(" ")[0];
+  /* Pakai cache nama dari saat login supaya tidak flash email → nama saat fetch berjalan */
+  const displayName = nasabah?.nama ?? getUserInfo()?.nama ?? "";
+  const firstName = displayName ? displayName.split(" ")[0] : "";
 
   return (
     <div className="bg-neutral-50 text-neutral-900 antialiased flex min-h-screen">
@@ -209,7 +210,7 @@ function DashboardContent() {
           {/* Welcome */}
           <div className="mb-8">
             <h2 className="text-3xl font-bold text-neutral-900 tracking-tight">
-              Assalamu&apos;alaikum, {firstName} 👋
+              Assalamu&apos;alaikum{firstName ? `, ${firstName}` : ""} 👋
             </h2>
             <p className="text-neutral-500 mt-1">
               {loading ? "Memuat data Anda..." : rekening ? "Pantau perjalanan tabungan haji Anda di sini." : "Selesaikan langkah berikutnya untuk memulai."}

@@ -24,7 +24,10 @@ function installFetchInterceptor() {
         : (input as Request).url;
 
     if (!url.startsWith(API_BASE)) return res;
-    if (url.includes("/auth/login")) return res;
+    /* Endpoint auth yang tidak boleh trigger auto-redirect:
+     * - /auth/login: error 401 = invalid kredensial, biarkan form handle
+     * - /auth/logout: user memang sedang logout, redirect handle sendiri */
+    if (url.includes("/auth/login") || url.includes("/auth/logout")) return res;
     if (window.location.pathname.startsWith("/login")) return res;
 
     clearToken();

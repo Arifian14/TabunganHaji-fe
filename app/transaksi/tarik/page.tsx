@@ -6,36 +6,14 @@ import { useEffect, useState } from "react";
 import AppHeader from "@/components/layout/app-header";
 import AppSidebar from "@/components/layout/app-sidebar";
 import AuthGuard from "@/components/auth-guard";
-import { authHeaders, getCurrentUser } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth";
+import { ApiError, api } from "@/lib/api";
+import type { TabunganHaji as Tabungan } from "@/lib/types";
+import { rupiah, formatRek, formatRekMasked, onlyDigits, formatNominal } from "@/lib/format";
 
-/* ─── Types ─── */
-type Status = "AKTIF" | "SUSPEND" | "TUTUP";
-type Tabungan = {
-  id: string;
-  nomorRekening: string;
-  saldo: number | string;
-  status: Status;
-  nasabahId: string;
-};
-type ApiError = { error: string; message: string };
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api/v1";
 const MIN_NOMINAL = 50_000;
 
-/* ─── Helpers ─── */
-function rupiah(n: number | string) {
-  return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", minimumFractionDigits: 0 }).format(Number(n));
-}
-function formatRek(no: string) {
-  return no?.replace(/(\d{4})(\d{4})(\d+)/, "$1 $2 $3") ?? no;
-}
-function onlyDigits(s: string) {
-  return s.replace(/\D/g, "");
-}
-function formatNominal(n: string) {
-  if (!n) return "";
-  return Number(n).toLocaleString("id-ID");
-}
+type FieldErrors = Partial<Record<"nominal", string>>;
 
 /* ─── Content ─── */
 function TarikContent() {
@@ -45,9 +23,11 @@ function TarikContent() {
   const [loading, setLoading] = useState(true);
 
   const [nominalRaw, setNominalRaw] = useState("");
+  const [revealRek, setRevealRek] = useState(false);
   const [confirmAck, setConfirmAck] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [success, setSuccess] = useState<{ nominal: number; saldoSesudah: number } | null>(null);
 
   useEffect(() => {
@@ -56,12 +36,13 @@ function TarikContent() {
       setLoading(false);
       return;
     }
-    fetch(`${API_URL}/tabungan-haji/nasabah/${u.sub}`, { headers: authHeaders() })
-      .then((r) => r.json())
+    api
+      .get<Tabungan[] | { data: Tabungan[] }>(`/tabungan-haji/nasabah/${u.sub}`)
       .then((d) => {
         const list: Tabungan[] = Array.isArray(d) ? d : (d.data ?? []);
         setRekening(list[0] ?? null);
       })
+      .catch(() => {/* AuthGuard handle 401 */})
       .finally(() => setLoading(false));
   }, []);
 
@@ -83,37 +64,39 @@ function TarikContent() {
   }
 
   async function handleSubmit() {
+    /* FE-side per-field validation */
+    const fe: FieldErrors = {};
+    if (!validNominal) fe.nominal = `Nominal minimal ${rupiah(MIN_NOMINAL)}.`;
+    else if (overdraw) fe.nominal = `Melebihi saldo. Maksimal ${rupiah(saldoSekarang)}.`;
+    if (Object.keys(fe).length > 0) {
+      setFieldErrors(fe);
+      return;
+    }
     if (!rekening) {
       setError("Rekening tidak ditemukan.");
       return;
     }
-    if (!validNominal) {
-      setError(`Nominal minimal ${rupiah(MIN_NOMINAL)}.`);
-      return;
-    }
-    if (overdraw) {
-      setError("Nominal melebihi saldo rekening.");
-      return;
-    }
     setSubmitting(true);
     setError(null);
+    setFieldErrors({});
     try {
-      const res = await fetch(`${API_URL}/tabungan-haji/${rekening.id}/tarik`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", ...authHeaders() },
-        body: JSON.stringify({ nominal: nominalNum }),
-      });
-      const d = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setError((d as ApiError).message ?? "Gagal mencatat penarikan.");
-        setSubmitting(false);
-        return;
-      }
+      const d = await api.post<{ saldoSesudah: number | string }>(
+        `/tabungan-haji/${rekening.id}/tarik`,
+        { nominal: nominalNum }
+      );
       const saldoSesudah = Number(d.saldoSesudah ?? saldoSekarang - nominalNum);
       setSuccess({ nominal: nominalNum, saldoSesudah });
       setTimeout(() => router.replace("/rekening"), 1800);
-    } catch {
-      setError("Tidak dapat terhubung ke server. Periksa koneksi Anda.");
+    } catch (err) {
+      if (err instanceof ApiError) {
+        if (err.details?.nominal?.[0]) {
+          setFieldErrors({ nominal: err.details.nominal[0] });
+        } else {
+          setError(err.firstDetail());
+        }
+      } else {
+        setError("Tidak dapat terhubung ke server. Periksa koneksi Anda.");
+      }
       setSubmitting(false);
     }
   }
@@ -165,7 +148,7 @@ function TarikContent() {
         <h2 className="text-lg font-semibold text-neutral-800">Penarikan Berhasil</h2>
         <p className="text-sm text-neutral-500 mt-1">
           Penarikan <span className="font-semibold text-neutral-800">{rupiah(success.nominal)}</span> telah dicatat untuk rekening{" "}
-          <span className="font-mono text-neutral-800">{formatRek(rekening.nomorRekening)}</span>.
+          <span className="font-mono text-neutral-800">{formatRekMasked(rekening.nomorRekening)}</span>.
         </p>
         <div className="mt-4 bg-amber-50 border border-amber-100 rounded-lg px-4 py-2.5">
           <p className="text-xs text-amber-700">Sisa Saldo</p>
@@ -232,7 +215,21 @@ function TarikContent() {
             </div>
             <div className="relative z-10">
               <p className="text-white/70 text-xs">Nomor Rekening</p>
-              <p className="text-lg font-bold font-mono tracking-widest">{formatRek(rekening.nomorRekening)}</p>
+              <div className="flex items-center gap-2">
+                <p className="text-lg font-bold font-mono tracking-widest">
+                  {revealRek ? formatRek(rekening.nomorRekening) : formatRekMasked(rekening.nomorRekening)}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setRevealRek((v) => !v)}
+                  className="text-white/70 hover:text-white transition-colors p-1 rounded hover:bg-white/10"
+                  title={revealRek ? "Sembunyikan" : "Tampilkan"}
+                >
+                  <span className="material-symbols-outlined text-[18px]">
+                    {revealRek ? "visibility_off" : "visibility"}
+                  </span>
+                </button>
+              </div>
               <div className="mt-4 pt-3 border-t border-white/20">
                 <p className="text-white/70 text-xs">Saldo Tersedia</p>
                 <p className="text-2xl font-extrabold tracking-tight">{rupiah(saldoSekarang)}</p>
@@ -264,17 +261,29 @@ function TarikContent() {
               type="text"
               inputMode="numeric"
               value={formatNominal(nominalRaw)}
-              onChange={(e) => { setNominalRaw(onlyDigits(e.target.value)); if (error) setError(null); }}
+              onChange={(e) => {
+                setNominalRaw(onlyDigits(e.target.value));
+                setFieldErrors({});
+                if (error) setError(null);
+              }}
               placeholder="0"
               disabled={!isAktif || !hasSaldo}
+              aria-invalid={!!fieldErrors.nominal || overdraw}
               className={`w-full pl-12 pr-4 py-3 bg-white border rounded-lg text-lg font-semibold text-neutral-900 focus:ring-1 transition-colors outline-none disabled:bg-neutral-50 disabled:cursor-not-allowed placeholder:text-neutral-300 ${
-                overdraw
+                fieldErrors.nominal || overdraw
                   ? "border-red-400 focus:border-red-500 focus:ring-red-500"
                   : "border-neutral-300 focus:border-primary focus:ring-primary"
               }`}
             />
           </div>
-          <p className="mt-1.5 text-xs text-neutral-500">Minimum {rupiah(MIN_NOMINAL)}.</p>
+          {fieldErrors.nominal ? (
+            <p className="mt-1.5 text-xs text-red-600 flex items-start gap-1">
+              <span className="material-symbols-outlined text-[14px] mt-px">error</span>
+              <span>{fieldErrors.nominal}</span>
+            </p>
+          ) : (
+            <p className="mt-1.5 text-xs text-neutral-500">Minimum {rupiah(MIN_NOMINAL)}.</p>
+          )}
 
           <div className="mt-3 flex flex-wrap gap-2">
             {[100_000, 500_000, 1_000_000, 2_500_000, 5_000_000].map((v) => (

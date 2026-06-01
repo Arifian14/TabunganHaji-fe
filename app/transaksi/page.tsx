@@ -88,7 +88,7 @@ function RiwayatTransaksiContent() {
   const [dateTo, setDateTo] = useState("");
   const [page, setPage] = useState(1);
 
-  /* fetch nasabah + rekening + transaksi */
+  /* fetch profil + mutasi (rekening + transaksi sekaligus via /mutasi) */
   useEffect(() => {
     const u = getCurrentUser();
     if (!u) {
@@ -99,29 +99,34 @@ function RiwayatTransaksiContent() {
 
     (async () => {
       try {
-        const [naRes, rekRes] = await Promise.allSettled([
+        /* Step 1: ambil rekening id dari /tabungan-haji/nasabah/:id (auto-self) */
+        const rekRes = await fetch(`${API_URL}/tabungan-haji/nasabah/${u.sub}`, { headers: h });
+        let rekId: string | null = null;
+        if (rekRes.ok) {
+          const d = await rekRes.json();
+          const list: Tabungan[] = Array.isArray(d) ? d : (d.data ?? []);
+          rekId = list[0]?.id ?? null;
+        }
+
+        if (!rekId) {
+          setLoading(false);
+          return;
+        }
+
+        /* Step 2: ambil profil + mutasi paralel */
+        const [naRes, mutRes] = await Promise.allSettled([
           fetch(`${API_URL}/nasabah/${u.sub}`, { headers: h }).then((r) => r.json()),
-          fetch(`${API_URL}/tabungan-haji/nasabah/${u.sub}`, { headers: h }).then((r) => r.json()),
+          fetch(`${API_URL}/tabungan-haji/${rekId}/mutasi`, { headers: h }).then((r) => r.json()),
         ]);
 
         if (naRes.status === "fulfilled" && naRes.value && !naRes.value.error) {
           setMe(naRes.value);
         }
 
-        let rek: Tabungan | null = null;
-        if (rekRes.status === "fulfilled") {
-          const list: Tabungan[] = Array.isArray(rekRes.value) ? rekRes.value : (rekRes.value.data ?? []);
-          rek = list[0] ?? null;
-          setRekening(rek);
-        }
-
-        if (rek) {
-          const txRes = await fetch(`${API_URL}/tabungan-haji/${rek.id}/transaksi`, { headers: h });
-          if (txRes.ok) {
-            const d = await txRes.json();
-            const list: Transaksi[] = Array.isArray(d) ? d : (d.data ?? []);
-            setRows(list);
-          }
+        /* /mutasi return: { rekening: {...}, mutasi: [...], total: N } */
+        if (mutRes.status === "fulfilled" && mutRes.value?.rekening) {
+          setRekening(mutRes.value.rekening as Tabungan);
+          setRows((mutRes.value.mutasi ?? []) as Transaksi[]);
         }
       } finally {
         setLoading(false);

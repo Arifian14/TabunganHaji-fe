@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { HealthStatus } from "@/components/health-status";
-import { clearToken, getCurrentUser, getUserInfo } from "@/lib/auth";
+import { getCurrentUser, getUserInfo } from "@/lib/auth";
+import { nasabahApi } from "@/lib/nasabah";
 
 function getInisial(nama: string): string {
   return (nama ?? "?").split(" ").map((w) => w[0] ?? "").join("").substring(0, 2).toUpperCase();
@@ -13,6 +14,7 @@ export default function AppHeader() {
   const router = useRouter();
   const [nama, setNama] = useState<string>("");
   const [email, setEmail] = useState<string>("");
+  const [loggingOut, setLoggingOut] = useState(false);
 
   useEffect(() => {
     const info = getUserInfo();
@@ -29,13 +31,14 @@ export default function AppHeader() {
     }
   }, []);
 
-  function handleLogout() {
-    clearToken();
+  async function handleLogout() {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    await nasabahApi.logout();
     router.push("/login");
   }
 
   const inisial = nama ? getInisial(nama) : "?";
-  const namaPendek = nama ? nama.split(" ")[0] : "";
 
   return (
     <header className="sticky top-0 z-50 flex items-center justify-between px-6 h-16 w-full bg-white border-b border-neutral-200 shadow-sm">
@@ -50,8 +53,8 @@ export default function AppHeader() {
         {/* User info (desktop only) */}
         {nama && (
           <div className="hidden md:flex flex-col items-end leading-tight">
-            <span className="text-sm font-semibold text-neutral-800 truncate max-w-[160px]">{namaPendek}</span>
-            <span className="text-xs text-neutral-500 truncate max-w-[160px]">{email}</span>
+            <span className="text-sm font-semibold text-neutral-800 truncate max-w-[220px]">{nama}</span>
+            <span className="text-xs text-neutral-500 truncate max-w-[220px]">{email}</span>
           </div>
         )}
 
@@ -66,11 +69,16 @@ export default function AppHeader() {
         <button
           type="button"
           onClick={handleLogout}
-          className="flex items-center gap-1 text-sm text-neutral-500 hover:text-red-600 transition-colors px-2 py-1.5 rounded-lg hover:bg-red-50"
+          disabled={loggingOut}
+          className="flex items-center gap-1 text-sm text-neutral-500 hover:text-red-600 transition-colors px-2 py-1.5 rounded-lg hover:bg-red-50 disabled:opacity-60 disabled:cursor-not-allowed"
           title="Keluar"
         >
-          <span className="material-symbols-outlined text-[18px]">logout</span>
-          <span className="font-medium hidden sm:inline">Keluar</span>
+          <span className={`material-symbols-outlined text-[18px] ${loggingOut ? "animate-spin" : ""}`}>
+            {loggingOut ? "progress_activity" : "logout"}
+          </span>
+          <span className="font-medium hidden sm:inline">
+            {loggingOut ? "Keluar..." : "Keluar"}
+          </span>
         </button>
       </div>
     </header>

@@ -19,8 +19,13 @@ function LoginInner() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const registered = params.get("registered");
   const [sessionNotice, setSessionNotice] = useState<string | null>(
-    reason === "expired" ? "Sesi Anda telah berakhir. Silakan masuk kembali." : null
+    reason === "expired"
+      ? "Sesi Anda telah berakhir. Silakan masuk kembali."
+      : registered === "1"
+      ? "Pendaftaran berhasil. Silakan masuk dengan email & password Anda."
+      : null
   );
 
   /* If already logged in, skip the form */
@@ -202,13 +207,22 @@ function LoginInner() {
                 </div>
               </div>
 
-              <Link
-                href="/nasabah/register"
-                className="w-full flex justify-center items-center gap-2 py-3 px-4 rounded-lg text-sm font-semibold text-primary border-2 border-primary hover:bg-primary/5 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200"
-              >
-                <span className="material-symbols-outlined text-lg">person_add</span>
-                Daftar Nasabah Baru
-              </Link>
+              <div className="grid grid-cols-2 gap-2">
+                <Link
+                  href="/register"
+                  className="flex justify-center items-center gap-1.5 py-3 px-3 rounded-lg text-xs font-semibold text-primary border-2 border-primary hover:bg-primary/5 active:scale-[0.98] transition-all"
+                >
+                  <span className="material-symbols-outlined text-base">key</span>
+                  Daftar Cepat
+                </Link>
+                <Link
+                  href="/nasabah/register"
+                  className="flex justify-center items-center gap-1.5 py-3 px-3 rounded-lg text-xs font-semibold text-primary border-2 border-primary hover:bg-primary/5 active:scale-[0.98] transition-all"
+                >
+                  <span className="material-symbols-outlined text-base">person_add</span>
+                  Daftar Lengkap
+                </Link>
+              </div>
             </form>
 
             <div className="mt-7 bg-red-50 rounded-lg border border-red-100 p-4 flex items-start gap-3">
