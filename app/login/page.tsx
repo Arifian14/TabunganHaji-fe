@@ -20,6 +20,7 @@ function LoginInner() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const registered = params.get("registered");
   const [sessionNotice, setSessionNotice] = useState<string | null>(
     reason === "expired"
@@ -29,10 +30,15 @@ function LoginInner() {
       : null
   );
 
-  /* If already logged in, skip the form */
+  /* If already logged in, skip the form - only check once on mount */
   useEffect(() => {
-    if (isLoggedIn()) router.replace(safeFrom);
-  }, [router, safeFrom]);
+    if (isLoggedIn()) {
+      console.log("[login] already logged in, redirecting to", safeFrom);
+      router.replace(safeFrom);
+    } else {
+      setIsCheckingAuth(false);
+    }
+  }, []); // Empty dependency array - only run once on mount
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -41,6 +47,7 @@ function LoginInner() {
     setSessionNotice(null);
 
     try {
+      console.log("[login] submitting login request");
       const res = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -48,6 +55,7 @@ function LoginInner() {
       });
 
       const data = await res.json();
+      console.log("[login] response status:", res.status, "data:", data);
 
       if (!res.ok) {
         setError(data.message ?? "Email atau password salah.");
@@ -57,22 +65,33 @@ function LoginInner() {
 
       // Support both old (token) and new (accessToken) response formats
       const accessToken = data.accessToken ?? data.token;
+      console.log("[login] accessToken:", accessToken ? "exists" : "missing");
+      
       if (accessToken) {
         setToken(accessToken);
+        console.log("[login] token saved to localStorage");
       }
 
       // Save refresh token (new)
       if (data.refreshToken) {
         setRefreshToken(data.refreshToken);
+        console.log("[login] refresh token saved");
       }
 
       // Save user info (existing)
       if (data.nasabah) {
         setUserInfo(data.nasabah);
+        console.log("[login] user info saved:", data.nasabah.email);
       }
 
-      router.replace(safeFrom);
-    } catch {
+      // Delay redirect slightly to let AuthGuard detect token
+      console.log("[login] waiting 100ms before redirect to", safeFrom);
+      setTimeout(() => {
+        console.log("[login] executing router.replace");
+        router.replace(safeFrom);
+      }, 100);
+    } catch (err) {
+      console.error("[login] error:", err);
       setError("Tidak dapat terhubung ke server. Periksa koneksi Anda.");
       setIsLoading(false);
     }
@@ -87,8 +106,20 @@ function LoginInner() {
         backgroundSize: "20px 20px",
       }}
     >
-      <main className="w-full max-w-md flex flex-col items-center">
-        <div className="bg-white w-full rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-neutral-100 overflow-hidden">
+      {/* Show loading spinner while checking auth */}
+      {isCheckingAuth && (
+        <div className="flex flex-col items-center text-neutral-400">
+          <span className="material-symbols-outlined text-4xl mb-2 animate-spin">
+            progress_activity
+          </span>
+          <p className="text-sm font-medium">Memverifikasi sesi...</p>
+        </div>
+      )}
+
+      {/* Show login form when done checking */}
+      {!isCheckingAuth && (
+        <main className="w-full max-w-md flex flex-col items-center">
+          <div className="bg-white w-full rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-neutral-100 overflow-hidden">
           <div className="h-1.5 w-full bg-primary" />
 
           <div className="p-8 sm:p-10">
@@ -262,6 +293,7 @@ function LoginInner() {
           </p>
         </div>
       </main>
+      )}
     </div>
   );
 }

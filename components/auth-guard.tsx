@@ -44,13 +44,18 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    console.log("[AuthGuard] initializing");
     installFetchInterceptor();
     const token = getToken();
+    console.log("[AuthGuard] token exists:", !!token, "length:", token?.length ?? 0);
+    
     if (!token) {
+      console.log("[AuthGuard] no token, redirecting to login");
       const current = window.location.pathname + window.location.search;
       router.replace(`/login?from=${encodeURIComponent(current)}`);
       return;
     }
+    console.log("[AuthGuard] token found, allowing access");
     setReady(true);
   }, [router]);
 
