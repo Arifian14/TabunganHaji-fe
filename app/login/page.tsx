@@ -32,8 +32,12 @@ export default function LoginPage() {
         return;
       }
 
-      if (data.token) {
-        localStorage.setItem("bsi_token", data.token);
+      // Simpan access token dan refresh token
+      if (data.accessToken) {
+        localStorage.setItem("bsi_token", data.accessToken);
+      }
+      if (data.refreshToken) {
+        localStorage.setItem("bsi_refresh_token", data.refreshToken);
       }
       window.location.href = "/dashboard";
     } catch {
