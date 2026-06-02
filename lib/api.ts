@@ -127,6 +127,7 @@ async function request<T>(
 
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
+    "X-Skip-AuthGuard": "1",
     ...(useAuth ? (authHeaders() as Record<string, string>) : {}),
     ...(typeof opts.init?.headers === "object" ? (opts.init.headers as Record<string, string>) : {}),
   };

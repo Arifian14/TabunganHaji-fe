@@ -23,11 +23,17 @@ function installFetchInterceptor() {
         ? input.toString()
         : (input as Request).url;
 
+    const headers = new Headers(init?.headers ?? (input instanceof Request ? input.headers : undefined));
+    const skipAuthGuard = headers.get("X-Skip-AuthGuard") === "1";
+
     if (!url.startsWith(API_BASE)) return res;
     /* Endpoint auth yang tidak boleh trigger auto-redirect:
      * - /auth/login: error 401 = invalid kredensial, biarkan form handle
-     * - /auth/logout: user memang sedang logout, redirect handle sendiri */
-    if (url.includes("/auth/login") || url.includes("/auth/logout")) return res;
+     * - /auth/logout: user memang sedang logout, redirect handle sendiri
+     * - /auth/refresh: biarkan api.ts yang menangani refresh token */
+    if (url.includes("/auth/login") || url.includes("/auth/logout") || url.includes("/auth/refresh") || skipAuthGuard) {
+      return res;
+    }
     if (window.location.pathname.startsWith("/login")) return res;
 
     clearToken();

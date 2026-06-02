@@ -42,7 +42,14 @@ function TarikContent() {
         const list: Tabungan[] = Array.isArray(d) ? d : (d.data ?? []);
         setRekening(list[0] ?? null);
       })
-      .catch(() => {/* AuthGuard handle 401 */})
+      .catch((err) => {
+        console.error("[tarik] gagal mengambil rekening", err);
+        if (err instanceof ApiError) {
+          setError(err.firstDetail());
+        } else {
+          setError("Gagal mengambil data rekening. Silakan coba lagi.");
+        }
+      })
       .finally(() => setLoading(false));
   }, []);
 
