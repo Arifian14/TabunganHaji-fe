@@ -1,21 +1,43 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { isLoggedIn, setToken, setUserInfo } from "@/lib/auth";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api/v1";
 
-export default function LoginPage() {
+function LoginInner() {
+  const router = useRouter();
+  const params = useSearchParams();
+  const fromParam = params.get("from");
+  const reason = params.get("reason");
+  const safeFrom = fromParam && fromParam.startsWith("/") && !fromParam.startsWith("/login") ? fromParam : "/dashboard";
+
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const registered = params.get("registered");
+  const [sessionNotice, setSessionNotice] = useState<string | null>(
+    reason === "expired"
+      ? "Sesi Anda telah berakhir. Silakan masuk kembali."
+      : registered === "1"
+      ? "Pendaftaran berhasil. Silakan masuk dengan email & password Anda."
+      : null
+  );
+
+  /* If already logged in, skip the form */
+  useEffect(() => {
+    if (isLoggedIn()) router.replace(safeFrom);
+  }, [router, safeFrom]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+    setSessionNotice(null);
 
     try {
       const res = await fetch(`${API_URL}/auth/login`, {
@@ -32,6 +54,7 @@ export default function LoginPage() {
         return;
       }
 
+<<<<<<< HEAD
       // Simpan access token dan refresh token
       if (data.accessToken) {
         localStorage.setItem("bsi_token", data.accessToken);
@@ -40,6 +63,11 @@ export default function LoginPage() {
         localStorage.setItem("bsi_refresh_token", data.refreshToken);
       }
       window.location.href = "/dashboard";
+=======
+      if (data.token) setToken(data.token);
+      if (data.nasabah) setUserInfo(data.nasabah);
+      router.replace(safeFrom);
+>>>>>>> 8a81c5994669c0969fc3f1120855b7d28678acc9
     } catch {
       setError("Tidak dapat terhubung ke server. Periksa koneksi Anda.");
       setIsLoading(false);
@@ -56,15 +84,10 @@ export default function LoginPage() {
       }}
     >
       <main className="w-full max-w-md flex flex-col items-center">
-
-        {/* Login Card */}
         <div className="bg-white w-full rounded-2xl shadow-[0_8px_30px_rgba(0,0,0,0.06)] border border-neutral-100 overflow-hidden">
-
-          {/* Teal Top Bar */}
           <div className="h-1.5 w-full bg-primary" />
 
           <div className="p-8 sm:p-10">
-
             {/* Header */}
             <div className="flex flex-col items-center mb-8 text-center">
               <div className="h-16 w-16 mb-5 bg-primary-container rounded-full flex items-center justify-center">
@@ -83,7 +106,20 @@ export default function LoginPage() {
               </p>
             </div>
 
-            {/* Error Banner */}
+            {/* Session expired notice */}
+            {sessionNotice && (
+              <div className="mb-5 flex items-start gap-3 p-3 bg-amber-50 rounded-lg border border-amber-200">
+                <span
+                  className="material-symbols-outlined text-amber-600 text-xl shrink-0"
+                  style={{ fontVariationSettings: '"FILL" 1' }}
+                >
+                  schedule
+                </span>
+                <p className="text-sm text-amber-800">{sessionNotice}</p>
+              </div>
+            )}
+
+            {/* Error banner */}
             {error && (
               <div className="mb-5 flex items-start gap-3 p-3 bg-error-container rounded-lg border border-error/20">
                 <span
@@ -98,8 +134,6 @@ export default function LoginPage() {
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-5">
-
-              {/* Email */}
               <div className="space-y-1.5">
                 <label className="block text-sm font-semibold text-on-surface" htmlFor="email">
                   Email Petugas
@@ -122,7 +156,6 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* Password */}
               <div className="space-y-1.5">
                 <label className="block text-sm font-semibold text-on-surface" htmlFor="password">
                   Kata Sandi
@@ -154,7 +187,6 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* Submit */}
               <button
                 type="submit"
                 disabled={isLoading}
@@ -175,7 +207,6 @@ export default function LoginPage() {
                 )}
               </button>
 
-              {/* Divider */}
               <div className="relative my-1">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-neutral-200" />
@@ -187,17 +218,24 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* Register Link Button */}
-              <Link
-                href="/nasabah/register"
-                className="w-full flex justify-center items-center gap-2 py-3 px-4 rounded-lg text-sm font-semibold text-primary border-2 border-primary hover:bg-primary/5 active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-200"
-              >
-                <span className="material-symbols-outlined text-lg">person_add</span>
-                Daftar Nasabah Baru
-              </Link>
+              <div className="grid grid-cols-2 gap-2">
+                <Link
+                  href="/register"
+                  className="flex justify-center items-center gap-1.5 py-3 px-3 rounded-lg text-xs font-semibold text-primary border-2 border-primary hover:bg-primary/5 active:scale-[0.98] transition-all"
+                >
+                  <span className="material-symbols-outlined text-base">key</span>
+                  Daftar Cepat
+                </Link>
+                <Link
+                  href="/nasabah/register"
+                  className="flex justify-center items-center gap-1.5 py-3 px-3 rounded-lg text-xs font-semibold text-primary border-2 border-primary hover:bg-primary/5 active:scale-[0.98] transition-all"
+                >
+                  <span className="material-symbols-outlined text-base">person_add</span>
+                  Daftar Lengkap
+                </Link>
+              </div>
             </form>
 
-            {/* Warning Banner */}
             <div className="mt-7 bg-red-50 rounded-lg border border-red-100 p-4 flex items-start gap-3">
               <span
                 className="material-symbols-outlined text-red-600 shrink-0 text-xl"
@@ -214,7 +252,6 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Footer */}
         <div className="mt-6 text-center">
           <p className="text-xs text-on-surface-variant/70 font-medium tracking-wide">
             © 2024 Bank Syariah Indonesia. All rights reserved.
@@ -222,5 +259,21 @@ export default function LoginPage() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <span className="material-symbols-outlined text-3xl text-neutral-400 animate-spin">
+            progress_activity
+          </span>
+        </div>
+      }
+    >
+      <LoginInner />
+    </Suspense>
   );
 }

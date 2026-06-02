@@ -1,6 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { nasabahApi } from "@/lib/nasabah";
 
 type NavItem = {
   href: string;
@@ -9,15 +11,10 @@ type NavItem = {
 };
 
 const mainNavItems: NavItem[] = [
-  { href: "/dashboard", icon: "dashboard", label: "Beranda" },
-  { href: "/nasabah", icon: "person_search", label: "Manajemen Nasabah" },
-  { href: "/transaksi", icon: "receipt_long", label: "Riwayat Transaksi" },
-  { href: "/laporan", icon: "assessment", label: "Laporan" },
-];
-
-const utilityNavItems: NavItem[] = [
-  { href: "/keamanan", icon: "security", label: "Keamanan" },
-  { href: "/bantuan", icon: "support_agent", label: "Bantuan" },
+  { href: "/dashboard", icon: "dashboard",                label: "Beranda" },
+  { href: "/rekening",  icon: "account_balance_wallet",   label: "Rekening" },
+  { href: "/transaksi", icon: "receipt_long",             label: "Riwayat Transaksi" },
+  { href: "/profil",    icon: "person",                   label: "Profil" },
 ];
 
 type AppSidebarProps = {
@@ -26,9 +23,12 @@ type AppSidebarProps = {
 
 export default function AppSidebar({ activeHref = "/dashboard" }: AppSidebarProps) {
   const router = useRouter();
+  const [loggingOut, setLoggingOut] = useState(false);
 
-  function handleLogout() {
-    if (typeof window !== "undefined") localStorage.removeItem("bsi_token");
+  async function handleLogout() {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    await nasabahApi.logout();
     router.push("/login");
   }
 
@@ -42,7 +42,7 @@ export default function AppSidebar({ activeHref = "/dashboard" }: AppSidebarProp
         </div>
         <div>
           <h1 className="text-[17px] font-black text-primary leading-tight">BSI Haji Savings</h1>
-          <p className="text-xs text-neutral-500 font-medium">Internal Staff</p>
+          <p className="text-xs text-neutral-500 font-medium">Tabungan Haji Nasabah</p>
         </div>
       </div>
 
@@ -74,29 +74,18 @@ export default function AppSidebar({ activeHref = "/dashboard" }: AppSidebarProp
         })}
       </nav>
 
-      {/* Utility Nav + Logout */}
-      <div className="px-2 mt-auto space-y-1 pt-4 border-t border-neutral-200">
-        {utilityNavItems.map((item) => (
-          <a
-            key={item.href}
-            href={item.href}
-            className="flex items-center gap-3 text-neutral-700 px-4 py-3 mx-2 rounded-lg hover:bg-primary/10 text-sm font-medium transition-colors group"
-          >
-            <span className="material-symbols-outlined text-[20px] text-neutral-500 group-hover:text-primary transition-colors">
-              {item.icon}
-            </span>
-            <span>{item.label}</span>
-          </a>
-        ))}
-        <div className="px-4 py-3">
-          <button
-            onClick={handleLogout}
-            className="w-full flex justify-center items-center gap-2 border border-red-300 text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-semibold transition-colors"
-          >
-            <span className="material-symbols-outlined text-[18px]">logout</span>
-            Log Out
-          </button>
-        </div>
+      {/* Logout */}
+      <div className="px-4 py-3 mt-auto border-t border-neutral-200 pt-4">
+        <button
+          onClick={handleLogout}
+          disabled={loggingOut}
+          className="w-full flex justify-center items-center gap-2 border border-red-300 text-red-600 hover:bg-red-50 px-4 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+          <span className={`material-symbols-outlined text-[18px] ${loggingOut ? "animate-spin" : ""}`}>
+            {loggingOut ? "progress_activity" : "logout"}
+          </span>
+          {loggingOut ? "Keluar..." : "Log Out"}
+        </button>
       </div>
     </aside>
   );
