@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { isLoggedIn, setToken, setUserInfo } from "@/lib/auth";
+import { setRefreshToken } from "@/lib/api";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3000/api/v1";
 
@@ -54,20 +55,23 @@ function LoginInner() {
         return;
       }
 
-<<<<<<< HEAD
-      // Simpan access token dan refresh token
-      if (data.accessToken) {
-        localStorage.setItem("bsi_token", data.accessToken);
+      // Support both old (token) and new (accessToken) response formats
+      const accessToken = data.accessToken ?? data.token;
+      if (accessToken) {
+        setToken(accessToken);
       }
+
+      // Save refresh token (new)
       if (data.refreshToken) {
-        localStorage.setItem("bsi_refresh_token", data.refreshToken);
+        setRefreshToken(data.refreshToken);
       }
-      window.location.href = "/dashboard";
-=======
-      if (data.token) setToken(data.token);
-      if (data.nasabah) setUserInfo(data.nasabah);
+
+      // Save user info (existing)
+      if (data.nasabah) {
+        setUserInfo(data.nasabah);
+      }
+
       router.replace(safeFrom);
->>>>>>> 8a81c5994669c0969fc3f1120855b7d28678acc9
     } catch {
       setError("Tidak dapat terhubung ke server. Periksa koneksi Anda.");
       setIsLoading(false);
